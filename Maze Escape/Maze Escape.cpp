@@ -2,13 +2,8 @@
 #include <fstream>
 #include <string>
 
-char** initDefaultMatrix(int rowCount, int colCount, char defaultSymbol)
+char** initDefaultMatrix(size_t rowCount, size_t colCount, char defaultSymbol)
 {
-    if (rowCount <= 0 || colCount <= 0)
-    {
-        return nullptr;
-    }
-
     char** matrix = new char* [rowCount];
 
     for (size_t i = 0; i < rowCount; i++)
@@ -24,7 +19,7 @@ char** initDefaultMatrix(int rowCount, int colCount, char defaultSymbol)
     return matrix;
 }
 
-char** readMap(const char* mapPath, int rowCount, int colCount)
+char** readMap(const char* mapPath, size_t rowCount, size_t colCount)
 {
     if (mapPath == nullptr)
     {
@@ -53,7 +48,7 @@ char** readMap(const char* mapPath, int rowCount, int colCount)
     return matrix;
 }
 
-void printMatrix(char** matrix, int rows, int cols)
+void printMatrix(char** matrix, size_t rows, size_t cols)
 {
     if (matrix == nullptr)
     {
@@ -70,7 +65,7 @@ void printMatrix(char** matrix, int rows, int cols)
     }
 }
 
-void deleteMatrix(char** matrix, int rows)
+void deleteMatrix(char** matrix, size_t rows)
 {
     if (matrix == nullptr)
     {
