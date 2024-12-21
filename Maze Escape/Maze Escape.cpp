@@ -114,6 +114,25 @@ void deleteMatrix(char** matrix, size_t rows)
     delete[] matrix;
 }
 
+void printGameInfo(Game game, Player player)
+{
+    std::cout << "Level " << game.level << std::endl;
+    std::cout << "Lives " << player.lives << std::endl;
+    std::cout << "Coins " << game.coinsCollected << std::endl;
+    std::cout << "Key ";
+
+    if (game.keyFound)
+    {
+        std::cout << "Found";
+    }
+    else
+    {
+        std::cout << "Not found";
+    }
+
+    std::cout << std::endl;
+}
+
 int main()
 {
     const char mapPath[] = "../Maps/Level 1/Map 1.txt";
