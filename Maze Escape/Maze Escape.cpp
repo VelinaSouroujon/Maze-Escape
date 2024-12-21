@@ -4,6 +4,12 @@
 
 const size_t NAME_MAX_LENGTH = 50;
 
+struct Map
+{
+    int mapRows;
+    int mapCols;
+    char** matrix;
+};
 struct Game
 {
     bool keyFound;
