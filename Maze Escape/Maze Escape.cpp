@@ -15,12 +15,6 @@ struct Map
     int mapRows;
     int mapCols;
     char** matrix;
-};
-
-struct MapCoordinate
-{
-    size_t x;
-    size_t y;
     MapCoordinate playerPosition;
 };
 
@@ -29,7 +23,8 @@ struct Game
     bool keyFound;
     int coinsCollected;
     int totalCoins;
-    char** map;
+    int level;
+    Map map;
 };
 
 struct Player
