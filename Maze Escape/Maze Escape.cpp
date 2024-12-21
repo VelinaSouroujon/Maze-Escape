@@ -4,6 +4,14 @@
 
 const size_t NAME_MAX_LENGTH = 50;
 
+struct Game
+{
+    bool keyFound;
+    int coinsCollected;
+    int totalCoins;
+    char** map;
+};
+
 struct Player
 {
     char name[NAME_MAX_LENGTH];
