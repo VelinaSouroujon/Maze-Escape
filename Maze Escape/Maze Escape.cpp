@@ -12,8 +12,8 @@ struct MapCoordinate
 
 struct Map
 {
-    int mapRows;
-    int mapCols;
+    int rowsCount;
+    int colsCount;
     char** matrix;
     MapCoordinate playerPosition;
 };
