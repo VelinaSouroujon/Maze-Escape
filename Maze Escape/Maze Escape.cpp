@@ -18,7 +18,7 @@ struct Player
     int level;
     int lives;
     int coins;
-    char** highestLevelGame;
+    Game highestLevelGame;
 };
 
 char** initDefaultMatrix(size_t rowCount, size_t colCount, char defaultSymbol)
