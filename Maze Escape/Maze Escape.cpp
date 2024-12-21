@@ -21,6 +21,7 @@ struct MapCoordinate
 {
     size_t x;
     size_t y;
+    MapCoordinate playerPosition;
 };
 
 struct Game
