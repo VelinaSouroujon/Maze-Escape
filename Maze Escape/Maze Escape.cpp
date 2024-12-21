@@ -6,8 +6,8 @@ const size_t NAME_MAX_LENGTH = 50;
 
 struct MapCoordinate
 {
-    size_t x;
-    size_t y;
+    size_t rowIdx;
+    size_t colIdx;
 };
 
 struct Map
