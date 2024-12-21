@@ -4,6 +4,12 @@
 
 const size_t NAME_MAX_LENGTH = 50;
 
+struct MapCoordinate
+{
+    size_t x;
+    size_t y;
+};
+
 struct Map
 {
     int mapRows;
