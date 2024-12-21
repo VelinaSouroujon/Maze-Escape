@@ -2,6 +2,17 @@
 #include <fstream>
 #include <string>
 
+const size_t NAME_MAX_LENGTH = 50;
+
+struct Player
+{
+    char name[NAME_MAX_LENGTH];
+    int level;
+    int lives;
+    int coins;
+    char** highestLevelGame;
+};
+
 char** initDefaultMatrix(size_t rowCount, size_t colCount, char defaultSymbol)
 {
     char** matrix = new char* [rowCount];
