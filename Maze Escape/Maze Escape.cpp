@@ -10,6 +10,13 @@ struct Map
     int mapCols;
     char** matrix;
 };
+
+struct MapCoordinate
+{
+    size_t x;
+    size_t y;
+};
+
 struct Game
 {
     bool keyFound;
