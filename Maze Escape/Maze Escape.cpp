@@ -47,6 +47,12 @@ struct Player
     Game lastGame;
 };
 
+void clearConsole()
+{
+    std::cout << "\033[;H"; // Moves cursor to the top left
+    std::cout << "\033[J"; // Clears the console
+}
+
 char** initDefaultMatrix(size_t rowCount, size_t colCount, char defaultSymbol)
 {
     char** matrix = new char* [rowCount];
