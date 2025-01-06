@@ -2,7 +2,17 @@
 #include <fstream>
 #include <string>
 
-const size_t NAME_MAX_LENGTH = 50;
+const char SPACE = ' ';
+const char WALL = '#';
+const char COIN = 'C';
+const char PORTAL = '%';
+const char KEY = '&';
+const char TREASURE = 'X';
+const char PLAYER = '@';
+
+const int MAX_LEVEL = 3;
+const int DEFAULT_LIVES = 3;
+const int NAME_MAX_LENGTH = 51;
 
 struct MapCoordinate
 {
