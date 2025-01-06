@@ -30,8 +30,9 @@ struct Map
 
 struct Game
 {
-    bool keyFound;
-    int coinsCollected;
+    bool keyFound = false;
+    bool treasureFound = false;
+    int coinsCollected = 0;
     int totalCoins;
     int level;
     Map map;
