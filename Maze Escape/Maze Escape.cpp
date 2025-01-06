@@ -41,10 +41,10 @@ struct Game
 struct Player
 {
     char name[NAME_MAX_LENGTH];
-    int level;
-    int lives;
-    int coins;
-    Game highestLevelGame;
+    int level = 1;
+    int lives = DEFAULT_LIVES;
+    int coins = 0;
+    Game lastGame;
 };
 
 char** initDefaultMatrix(size_t rowCount, size_t colCount, char defaultSymbol)
