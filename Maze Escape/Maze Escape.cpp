@@ -71,32 +71,65 @@ char** initDefaultMatrix(size_t rowCount, size_t colCount, char defaultSymbol)
 }
 
 char** readMap(const char* mapPath, size_t rowCount, size_t colCount)
+char** initMatrix(size_t rows, size_t cols)
 {
-    if (mapPath == nullptr)
+    char** matrix = new char* [rows];
+
+    for (size_t i = 0; i < rows; i++)
     {
-        return nullptr;
+        matrix[i] = new char[cols];
     }
-
-    std::ifstream map(mapPath);
-    if (!map.is_open())
-    {
-        return nullptr;
-    }
-
-    const char DEFAULT_SYMBOL = ' ';
-    char** matrix = initDefaultMatrix(rowCount, colCount + 1, DEFAULT_SYMBOL);
-
-    int rowIdx = 0;
-
-    while (rowIdx < rowCount
-        && map.getline(matrix[rowIdx], colCount + 1))
-    {
-        rowIdx++;
-    }
-
-    map.close();
 
     return matrix;
+}
+
+Game readGame(std::ifstream& inMap, size_t rowCount, size_t colCount, size_t level)
+{
+    Game game = {};
+    if (level > MAX_LEVEL)
+    {
+        return game;
+    }
+
+    if (!inMap.is_open())
+    {
+        return game;
+    }
+
+    game.level = level;
+    Map map = {};
+    map.rowsCount = rowCount;
+    map.colsCount = colCount;
+    map.matrix = initMatrix(rowCount, colCount);
+
+    for (size_t i = 0; i < rowCount; i++)
+    {
+        for (size_t j = 0; j < colCount; j++)
+        {
+            char ch;
+            do
+            {
+                inMap.get(ch);
+            } while (ch == '\n');
+
+            if (ch == PLAYER)
+            {
+                map.playerPosition = { i, j };
+                map.matrix[i][j] = SPACE;
+            }
+            else
+            {
+                map.matrix[i][j] = ch;
+            }
+            if (ch == COIN)
+            {
+                game.totalCoins++;
+            }
+        }
+    }
+
+    game.map = map;
+    return game;
 }
 
 void printMatrix(char** matrix, size_t rows, size_t cols)
