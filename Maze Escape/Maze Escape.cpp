@@ -70,7 +70,6 @@ char** initDefaultMatrix(size_t rowCount, size_t colCount, char defaultSymbol)
     return matrix;
 }
 
-char** readMap(const char* mapPath, size_t rowCount, size_t colCount)
 char** initMatrix(size_t rows, size_t cols)
 {
     char** matrix = new char* [rows];
@@ -132,21 +131,33 @@ Game readGame(std::ifstream& inMap, size_t rowCount, size_t colCount, size_t lev
     return game;
 }
 
-void printMatrix(char** matrix, size_t rows, size_t cols)
+void printMatrix(const Map& map)
 {
-    if (matrix == nullptr)
+    if (map.matrix == nullptr)
     {
         return;
     }
 
-    for (size_t i = 0; i < rows; i++)
+    std::cout << std::endl;
+
+    for (size_t i = 0; i < map.rowsCount; i++)
     {
-        for (size_t j = 0; j < cols; j++)
+        for (size_t j = 0; j < map.colsCount; j++)
         {
-            std::cout << matrix[i][j] << " ";
+            if (i == map.playerPosition.rowIdx
+                && j == map.playerPosition.colIdx)
+            {
+                std::cout << PLAYER;
+            }
+            else
+            {
+                std::cout << map.matrix[i][j];
+            }
+            std::cout << "  ";
         }
         std::cout << std::endl;
     }
+    std::cout << std::endl;
 }
 
 void deleteMatrix(char** matrix, size_t rows)
