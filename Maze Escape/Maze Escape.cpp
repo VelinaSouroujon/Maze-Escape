@@ -195,6 +195,15 @@ void printGameInfo(const Game& game, const Player& player)
 }
 
 int main()
+void printRulesToMove()
+{
+    std::cout << "Press the keys below to move: " << std::endl;
+    std::cout << "W - Up" << std::endl;
+    std::cout << "S - Down" << std::endl;
+    std::cout << "A - Left" << std::endl;
+    std::cout << "D - Right" << std::endl;
+}
+
 {
     const char mapPath[] = "../Maps/Level 1/Map 1.txt";
     const int rows = 10;
