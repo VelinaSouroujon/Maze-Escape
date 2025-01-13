@@ -248,6 +248,63 @@ bool changePosition(MapCoordinate& pCoordinate, char playerMove)
     return true;
 }
 
+MapCoordinate findNextPortal(const Map& map, const MapCoordinate& currPortal)
+{
+    MapCoordinate nextPortal = {};
+
+    if (map.matrix == nullptr)
+    {
+        return nextPortal;
+    }
+
+    int startRow, startCol;
+
+    if (currPortal.rowIdx == map.rowsCount - 1
+        && currPortal.colIdx == map.colsCount - 1)
+    {
+        startRow = 0;
+        startCol = 0;
+    }
+    else
+    {
+        startRow = currPortal.rowIdx;
+        startCol = currPortal.colIdx + 1;
+    }
+
+    bool portalFound = false;
+    for (int i = startRow; i < map.rowsCount; i++)
+    {
+        if (i != startRow)
+        {
+            startCol = 0;
+        }
+
+        for (int j = startCol; j < map.colsCount; j++)
+        {
+            if (map.matrix[i][j] == PORTAL)
+            {
+                portalFound = true;
+                nextPortal.rowIdx = i;
+                nextPortal.colIdx = j;
+                break;
+            }
+
+            if (i == map.rowsCount - 1 && j == map.colsCount - 1)
+            {
+                i = 0;
+                j = -1;
+            }
+        }
+
+        if (portalFound)
+        {
+            break;
+        }
+    }
+
+    return nextPortal;
+}
+
 
     return 0;
 }
