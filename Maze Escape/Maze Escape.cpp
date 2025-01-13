@@ -305,6 +305,65 @@ MapCoordinate findNextPortal(const Map& map, const MapCoordinate& currPortal)
     return nextPortal;
 }
 
+void move(Player& player, Game& game, char playerMove)
+{
+    char** matrix = game.map.matrix;
+    MapCoordinate& plCoordinate = game.map.playerPosition;
+    MapCoordinate newPosition = plCoordinate;
+
+    if (matrix == nullptr)
+    {
+        return;
+    }
+
+    if (!changePosition(newPosition, playerMove))
+    {
+        return;
+    }
+
+    if (!isValidCoordinate(newPosition, game.map.rowsCount, game.map.colsCount))
+    {
+        return;
+    }
+
+    switch (matrix[newPosition.rowIdx][newPosition.colIdx])
+    {
+    case WALL:
+        player.lives--;
+        break;
+
+    case SPACE:
+        plCoordinate = newPosition;
+        break;
+
+    case COIN:
+        game.coinsCollected++;
+        plCoordinate = newPosition;
+        matrix[newPosition.rowIdx][newPosition.colIdx] = SPACE;
+        break;
+
+    case KEY:
+        game.keyFound = true;
+        plCoordinate = newPosition;
+        matrix[newPosition.rowIdx][newPosition.colIdx] = SPACE;
+        break;
+
+    case PORTAL:
+        plCoordinate = findNextPortal(game.map, newPosition);
+        break;
+
+    case TREASURE:
+        plCoordinate = newPosition;
+
+        if (game.keyFound)
+        {
+            game.treasureFound = true;
+        }
+
+        break;
+    }
+}
+
 
     return 0;
 }
