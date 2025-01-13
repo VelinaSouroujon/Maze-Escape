@@ -204,14 +204,50 @@ void printRulesToMove()
     std::cout << "D - Right" << std::endl;
 }
 
+char toLower(char ch)
 {
-    const char mapPath[] = "../Maps/Level 1/Map 1.txt";
-    const int rows = 10;
-    const int cols = 15;
+    if (ch >= 'A' && ch <= 'Z')
+    {
+        return ch + ('a' - 'A');
+    }
 
-    char** pMatrix = readMap(mapPath, rows, cols);
-    printMatrix(pMatrix, rows, cols);
-    deleteMatrix(pMatrix, rows);
+    return ch;
+}
+
+bool isValidCoordinate(const MapCoordinate& coordinate, int rows, int cols)
+{
+    return coordinate.rowIdx < rows && coordinate.colIdx < cols;
+}
+
+bool changePosition(MapCoordinate& pCoordinate, char playerMove)
+{
+    playerMove = toLower(playerMove);
+
+    switch (playerMove)
+    {
+    case 'w':
+        pCoordinate.rowIdx--;
+        break;
+
+    case 's':
+        pCoordinate.rowIdx++;
+        break;
+
+    case 'a':
+        pCoordinate.colIdx--;
+        break;
+
+    case 'd':
+        pCoordinate.colIdx++;
+        break;
+
+    default:
+        return false;
+    }
+
+    return true;
+}
+
 
     return 0;
 }
