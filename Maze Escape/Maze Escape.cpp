@@ -175,12 +175,12 @@ void deleteMatrix(char** matrix, size_t rows)
     delete[] matrix;
 }
 
-void printGameInfo(Game game, Player player)
+void printGameInfo(const Game& game, const Player& player)
 {
-    std::cout << "Level " << game.level << std::endl;
-    std::cout << "Lives " << player.lives << std::endl;
-    std::cout << "Coins " << game.coinsCollected << std::endl;
-    std::cout << "Key ";
+    std::cout << "Level: " << game.level << std::endl;
+    std::cout << "Lives: " << player.lives << std::endl;
+    std::cout << "Coins: " << game.coinsCollected << "/" << game.totalCoins << std::endl;
+    std::cout << "Key: ";
 
     if (game.keyFound)
     {
