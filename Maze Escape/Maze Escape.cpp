@@ -194,7 +194,6 @@ void printGameInfo(const Game& game, const Player& player)
     std::cout << std::endl;
 }
 
-int main()
 void printRulesToMove()
 {
     std::cout << "Press the keys below to move: " << std::endl;
@@ -365,7 +364,6 @@ void move(Player& player, Game& game, char playerMove)
 }
 
 
-    return 0;
 bool writeGameInfo(std::ofstream& outFile, const Game& game)
 {
     if (!outFile.is_open())
@@ -446,3 +444,7 @@ void playGame(Game& game, Player& player)
     }
 }
 
+int main()
+{
+    return 0;
+}
