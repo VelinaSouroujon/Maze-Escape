@@ -399,3 +399,50 @@ bool writeGameInfo(std::ofstream& outFile, const Game& game)
 }
 
 }
+void playGame(Game& game, Player& player)
+{
+    if (game.map.matrix == nullptr)
+    {
+        return;
+    }
+
+    char playerMove;
+
+    while (true)
+    {
+        clearConsole();
+        printGameInfo(game, player);
+        printMatrix(game.map);
+
+        if (game.treasureFound)
+        {
+            player.coins += game.coinsCollected;
+
+            if ((game.level != MAX_LEVEL)
+                && player.level == game.level)
+            {
+                player.level++;
+            }
+
+            std::cout << "Congratulations! You win!" << std::endl;
+            break;
+        }
+        if (player.lives == 0)
+        {
+            player.lives = DEFAULT_LIVES;
+            std::cout << "You lose! Better luck next game!" << std::endl;
+            break;
+        }
+
+        printRulesToMove();
+
+        std::cin >> playerMove;
+        if (toLower(playerMove) == QUIT)
+        {
+            return;
+        }
+
+        move(player, game, playerMove);
+    }
+}
+
