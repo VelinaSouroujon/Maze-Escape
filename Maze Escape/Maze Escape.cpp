@@ -366,4 +366,36 @@ void move(Player& player, Game& game, char playerMove)
 
 
     return 0;
+bool writeGameInfo(std::ofstream& outFile, const Game& game)
+{
+    if (!outFile.is_open())
+    {
+        return false;
+    }
+
+    if (game.map.matrix == nullptr)
+    {
+        return false;
+    }
+
+    outFile << game.keyFound << std::endl;
+    outFile << game.coinsCollected << std::endl;
+    outFile << game.level << std::endl;
+    outFile << game.map.rowsCount << std::endl;
+    outFile << game.map.colsCount << std::endl;
+    outFile << game.map.playerPosition.rowIdx << std::endl;
+    outFile << game.map.playerPosition.colIdx << std::endl;
+
+    for (size_t i = 0; i < game.map.rowsCount; i++)
+    {
+        for (size_t j = 0; j < game.map.colsCount; j++)
+        {
+            outFile << game.map.matrix[i][j];
+        }
+        outFile << std::endl;
+    }
+
+    return true;
+}
+
 }
