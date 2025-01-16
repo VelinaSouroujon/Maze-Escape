@@ -44,7 +44,7 @@ struct Player
     int level = 1;
     int lives = DEFAULT_LIVES;
     int coins = 0;
-    Game lastGame;
+    Game* savedGamesPerLevel[MAX_LEVEL] = {nullptr};
 };
 
 void clearConsole()
