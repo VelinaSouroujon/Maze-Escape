@@ -396,7 +396,122 @@ bool writeGameInfo(std::ofstream& outFile, const Game& game)
     return true;
 }
 
+int getStrLen(const char* str)
+{
+    if (str == nullptr)
+    {
+        return -1;
+    }
+
+    int length = 0;
+
+    while (*str != '\0')
+    {
+        length++;
+        str++;
+    }
+
+    return length;
 }
+
+void strCopy(const char* source, char* dest, size_t destStartIdx)
+{
+    if (source == nullptr || dest == nullptr)
+    {
+        return;
+    }
+
+    size_t idx = 0;
+    while (source[idx] != '\0')
+    {
+        dest[idx + destStartIdx] = source[idx];
+        idx++;
+    }
+
+    dest[idx + destStartIdx] = '\0';
+}
+
+int getTotalLength(const char* const* strings, size_t len, int* lengthMap)
+{
+    if (strings == nullptr || lengthMap == nullptr)
+    {
+        return -1;
+    }
+
+    int totalLen = 0;
+
+    for (size_t i = 0; i < len; i++)
+    {
+        int currLen = getStrLen(strings[i]);
+        if (currLen == -1)
+        {
+            lengthMap[i] = 0;
+            continue;
+        }
+
+        lengthMap[i] = currLen;
+        totalLen += currLen;
+    }
+
+    return totalLen;
+}
+
+char* getFilePath(const char* const* folders, size_t len, const char* extension = "txt")
+{
+    if (folders == nullptr || extension == nullptr || len == 0)
+    {
+        return nullptr;
+    }
+
+    const char DELIMITER = '/';
+    const char EXTENSION_DELIMITER = '.';
+    int delimetersCount = len;
+
+    int* lenMap = new int[len];
+    int extensionLen = getStrLen(extension);
+
+    int totalLen = getTotalLength(folders, len, lenMap) + extensionLen + delimetersCount;
+
+    char* result = new char[totalLen + 1];
+    result[totalLen] = '\0';
+
+    size_t resultIdx = 0;
+    bool isFirst = true;
+
+    for (size_t i = 0; i < len; i++)
+    {
+        if (folders[i] == nullptr)
+        {
+            continue;
+        }
+
+        if (isFirst)
+        {
+            isFirst = false;
+        }
+        else
+        {
+            result[resultIdx] = DELIMITER;
+            resultIdx++;
+        }
+
+        strCopy(folders[i], result, resultIdx);
+        resultIdx += lenMap[i];
+    }
+
+    delete[] lenMap;
+
+    if (extensionLen > 0)
+    {
+        result[resultIdx] = EXTENSION_DELIMITER;
+        resultIdx++;
+    }
+
+    strCopy(extension, result, resultIdx);
+
+    return result;
+}
+
 void playGame(Game& game, Player& player)
 {
     if (game.map.matrix == nullptr)
