@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <stdlib.h>
+#include <time.h>
 
 const char SPACE = ' ';
 const char WALL = '#';
@@ -510,6 +511,29 @@ char* getFilePath(const char* const* folders, size_t len, const char* extension 
     strCopy(extension, result, resultIdx);
 
     return result;
+}
+
+void swap(int& first, int& second)
+{
+    int temp = first;
+    first = second;
+    second = temp;
+}
+
+void initRandom()
+{
+    srand(time(0));
+}
+
+int getRandomNumber(int min, int max)
+{
+    if (min > max)
+    {
+        swap(min, max);
+    }
+
+    int random = min + rand() % (max - min + 1);
+    return random;
 }
 
 void playGame(Game& game, Player& player)
