@@ -372,14 +372,59 @@ void move(Player& player, Game& game, char playerMove)
 }
 
 
-bool writeGameInfo(std::ofstream& outFile, const Game& game)
+bool savePlayerInfo(std::ofstream& outFile, const Player& player)
 {
     if (!outFile.is_open())
     {
         return false;
     }
 
+    outFile << player.name << std::endl;
+    outFile << player.level << std::endl;
+    outFile << player.lives << std::endl;
+    outFile << player.coins << std::endl;
+
+    return true;
+}
+
+bool appendMapInfo(std::ofstream& outFile, const Map& map)
+{
+    if (!outFile.is_open())
+    {
+        return false;
+    }
+
+    outFile << map.rowsCount << std::endl;
+    outFile << map.colsCount << std::endl;
+
+    for (size_t i = 0; i < map.rowsCount; i++)
+    {
+        for (size_t j = 0; j < map.colsCount; j++)
+        {
+            if (i == map.playerPosition.rowIdx
+                && j == map.playerPosition.colIdx)
+            {
+                outFile << PLAYER;
+            }
+            else
+            {
+                outFile << map.matrix[i][j];
+            }
+        }
+        outFile << std::endl;
+    }
+
+    return true;
+}
+
+bool appendGameInfo(std::ofstream& outFile, const Game& game)
+{
     if (game.map.matrix == nullptr)
+    {
+        return false;
+    }
+
+    if (!outFile.is_open())
     {
         return false;
     }
@@ -387,19 +432,8 @@ bool writeGameInfo(std::ofstream& outFile, const Game& game)
     outFile << game.keyFound << std::endl;
     outFile << game.coinsCollected << std::endl;
     outFile << game.level << std::endl;
-    outFile << game.map.rowsCount << std::endl;
-    outFile << game.map.colsCount << std::endl;
-    outFile << game.map.playerPosition.rowIdx << std::endl;
-    outFile << game.map.playerPosition.colIdx << std::endl;
 
-    for (size_t i = 0; i < game.map.rowsCount; i++)
-    {
-        for (size_t j = 0; j < game.map.colsCount; j++)
-        {
-            outFile << game.map.matrix[i][j];
-        }
-        outFile << std::endl;
-    }
+    appendMapInfo(outFile, game.map);
 
     return true;
 }
