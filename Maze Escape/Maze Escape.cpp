@@ -83,28 +83,18 @@ char** initMatrix(size_t rows, size_t cols)
     return matrix;
 }
 
-Game readGame(std::ifstream& inMap, size_t rowCount, size_t colCount, size_t level)
+bool readMatrix(std::ifstream& inMap, Game& game)
 {
-    Game game = {};
-    if (level > MAX_LEVEL)
-    {
-        return game;
-    }
-
     if (!inMap.is_open())
     {
-        return game;
+        return false;
     }
 
-    game.level = level;
-    Map map = {};
-    map.rowsCount = rowCount;
-    map.colsCount = colCount;
-    map.matrix = initMatrix(rowCount, colCount);
+    Map& map = game.map;
 
-    for (size_t i = 0; i < rowCount; i++)
+    for (size_t i = 0; i < map.rowsCount; i++)
     {
-        for (size_t j = 0; j < colCount; j++)
+        for (size_t j = 0; j < map.colsCount; j++)
         {
             char ch;
             do
@@ -128,8 +118,25 @@ Game readGame(std::ifstream& inMap, size_t rowCount, size_t colCount, size_t lev
         }
     }
 
-    game.map = map;
-    return game;
+    return true;
+}
+
+bool readGame(Game& game, std::ifstream& inMap)
+{
+    if (!inMap.is_open())
+    {
+        return false;
+    }
+
+    Map& map = game.map;
+    inMap >> map.rowsCount;
+    inMap >> map.colsCount;
+    inMap.ignore();
+
+    map.matrix = initMatrix(map.rowsCount, map.colsCount);
+    readMatrix(inMap, game);
+
+    return true;
 }
 
 void printMatrix(const Map& map)
