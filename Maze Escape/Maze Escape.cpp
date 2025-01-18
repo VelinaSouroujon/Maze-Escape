@@ -277,7 +277,7 @@ void printMatrix(const Map& map)
     std::cout << std::endl;
 }
 
-void deleteMatrix(char** matrix, size_t rows)
+void deleteMatrix(char**& matrix, size_t rows)
 {
     if (matrix == nullptr)
     {
@@ -290,6 +290,8 @@ void deleteMatrix(char** matrix, size_t rows)
     }
 
     delete[] matrix;
+
+    matrix = nullptr;
 }
 
 void printGameInfo(const Game& game, const Player& player)
