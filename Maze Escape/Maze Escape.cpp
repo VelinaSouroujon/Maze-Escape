@@ -665,6 +665,24 @@ char* getFilePath(const char* const* folders, size_t len, const char* extension 
     return result;
 }
 
+bool fileExists(const char* name)
+{
+    if (name == nullptr)
+    {
+        return false;
+    }
+
+    std::ifstream file(name);
+
+    if (file.is_open())
+    {
+        file.close();
+        return true;
+    }
+
+    return false;
+}
+
 void strToLower(const char* inputStr, char* result)
 {
     if (inputStr == nullptr || result == nullptr)
@@ -699,6 +717,51 @@ char* getPlayerFilePath(const char* name)
     char* filePath = getFilePath(folders, foldersCount);
 
     return filePath;
+}
+
+char* getPlayerNamesFilePath()
+{
+    const char plNamesDirPath[] = "../Names";
+    const int foldersCount = 1;
+    const char* pNamesDir[foldersCount] = { plNamesDirPath };
+    char* filePath = getFilePath(pNamesDir, foldersCount);
+
+    return filePath;
+}
+
+bool appendPlayerNameToFile(const char* name)
+{
+    if (name == nullptr)
+    {
+        return false;
+    }
+
+    char nameToLower[NAME_MAX_LENGTH];
+    strToLower(name, nameToLower);
+    char* plFilePath = getPlayerFilePath(nameToLower);
+
+    if (fileExists(plFilePath))
+    {
+        delete[] plFilePath;
+        return false;
+    }
+
+    delete[] plFilePath;
+
+    char* filePath = getPlayerNamesFilePath();
+
+    std::ofstream outFile(filePath, std::ios::app);
+    delete[] filePath;
+
+    if (!outFile.is_open())
+    {
+        return false;
+    }
+
+    outFile << nameToLower << std::endl;
+    outFile.close();
+
+    return true;
 }
 
 bool savePlayerGames(std::ofstream& outFile, const Player& player)
