@@ -45,7 +45,7 @@ struct Player
     int level = 1;
     int lives = DEFAULT_LIVES;
     int coins = 0;
-    Game* savedGamesPerLevel[MAX_LEVEL] = {nullptr};
+    Game savedGamesPerLevel[MAX_LEVEL] = {};
 };
 
 void clearConsole()
@@ -552,6 +552,88 @@ char* getFilePath(const char* const* folders, size_t len, const char* extension 
     strCopy(extension, result, resultIdx);
 
     return result;
+}
+
+void strToLower(const char* inputStr, char* result)
+{
+    if (inputStr == nullptr || result == nullptr)
+    {
+        return;
+    }
+
+    int idx = 0;
+
+    while (inputStr[idx] != '\0')
+    {
+        result[idx] = toLower(inputStr[idx]);
+        idx++;
+    }
+
+    result[idx] = '\0';
+}
+
+char* getPlayerFilePath(const char* name)
+{
+    if (name == nullptr)
+    {
+        return nullptr;
+    }
+
+    char nameToLower[NAME_MAX_LENGTH];
+    strToLower(name, nameToLower);
+
+    const int foldersCount = 2;
+    const char playerDirPath[] = "../Players";
+    const char* folders[foldersCount] = { playerDirPath, nameToLower };
+    char* filePath = getFilePath(folders, foldersCount);
+
+    return filePath;
+}
+
+bool savePlayerGames(std::ofstream& outFile, const Player& player)
+{
+    if (!outFile.is_open())
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < player.level; i++)
+    {
+        const Game& savedGame = player.savedGamesPerLevel[i];
+
+        if (savedGame.map.matrix == nullptr)
+        {
+            continue;
+        }
+
+        appendGameInfo(outFile, savedGame);
+    }
+
+    return true;
+}
+
+bool savePlayerProgress(const Player& player)
+{
+    if (player.name == nullptr)
+    {
+        return false;
+    }
+
+    char* filePath = getPlayerFilePath(player.name);
+    std::ofstream outFile(filePath);
+    delete[] filePath;
+
+    if (!outFile.is_open())
+    {
+        return false;
+    }
+
+    savePlayerInfo(outFile, player);
+    savePlayerGames(outFile, player);
+
+    outFile.close();
+
+    return true;
 }
 
 void swap(int& first, int& second)
