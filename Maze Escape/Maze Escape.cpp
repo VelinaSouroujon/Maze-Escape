@@ -810,6 +810,69 @@ bool savePlayerProgress(const Player& player)
     return true;
 }
 
+bool readPlayerInfo(std::ifstream& inFile, Player& player)
+{
+    if (!inFile.is_open())
+    {
+        return false;
+    }
+
+    inFile.getline(player.name, NAME_MAX_LENGTH);
+    inFile >> player.level;
+    inFile >> player.lives;
+    inFile >> player.coins;
+
+    return true;
+}
+
+bool readSavedGames(std::ifstream& inFile, Player& player)
+{
+    if (!inFile.is_open())
+    {
+        return false;
+    }
+
+    while (inFile.peek() != EOF)
+    {
+        Game game = {};
+        inFile >> game.keyFound;
+        inFile >> game.coinsCollected;
+        inFile >> game.level;
+        game.totalCoins += game.coinsCollected;
+
+        readGame(game, inFile);
+        player.savedGamesPerLevel[game.level - 1] = game;
+        inFile.ignore();
+    }
+
+    return true;
+}
+
+bool getPlayerByName(const char* name, Player& player)
+{
+    if (name == nullptr)
+    {
+        return false;
+    }
+
+    char* filePath = getPlayerFilePath(name);
+    std::ifstream inFile(filePath);
+    delete[] filePath;
+
+    if (!inFile.is_open())
+    {
+        return false;
+    }
+
+    readPlayerInfo(inFile, player);
+    inFile.ignore();
+    readSavedGames(inFile, player);
+   
+    inFile.close();
+
+    return true;
+}
+
 void swap(int& first, int& second)
 {
     int temp = first;
