@@ -54,6 +54,115 @@ void clearConsole()
     std::cout << "\033[J"; // Clears the console
 }
 
+void swapPlayers(std::vector<Player>& players, size_t firstIdx, size_t secondIdx)
+{
+    if (firstIdx >= players.size() || secondIdx >= players.size())
+    {
+        return;
+    }
+
+    Player temp = players[firstIdx];
+    players[firstIdx] = players[secondIdx];
+    players[secondIdx] = temp;
+}
+
+int compareDesc(int first, int second)
+{
+    if (first > second)
+    {
+        return -1;
+    }
+
+    if (first < second)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+int comparePlayers(const Player& firstPlayer, const Player& secondPlayer)
+{
+    int result = compareDesc(firstPlayer.level, secondPlayer.level);
+    if (result != 0)
+    {
+        return result;
+    }
+
+    result = compareDesc(firstPlayer.coins, secondPlayer.coins);
+    if (result != 0)
+    {
+        return result;
+    }
+
+    result = compareDesc(firstPlayer.lives, secondPlayer.lives);
+    return result;
+}
+
+bool isValidIdx(int idx, size_t arrLen)
+{
+    return idx >= 0 && idx < arrLen;
+}
+
+void sortPlayers(std::vector<Player>& players, int startIdx, int endIdx)
+{
+    size_t playersSize = players.size();
+    if ((!isValidIdx(startIdx, playersSize)) || (!isValidIdx(endIdx, playersSize)))
+    {
+        return;
+    }
+
+    if (startIdx >= endIdx)
+    {
+        return;
+    }
+
+    int pivot = startIdx;
+    int left = pivot + 1;
+    int right = endIdx;
+
+    while (left <= right)
+    {
+        if (comparePlayers(players[left], players[pivot]) > 0
+            && comparePlayers(players[right], players[pivot]) < 0)
+        {
+            swapPlayers(players, left, right);
+        }
+
+        if (comparePlayers(players[left], players[pivot]) <= 0)
+        {
+            left++;
+        }
+
+        if (comparePlayers(players[right], players[pivot]) >= 0)
+        {
+            right--;
+        }
+    }
+
+    swapPlayers(players, pivot, right);
+
+    int firstSubvectorStart = startIdx;
+    int firstSubvectorEnd = right - 1;
+
+    int secondSubvectorStart = right + 1;
+    int secondSubvectorEnd = endIdx;
+
+    int firstSubvectorSize = firstSubvectorEnd - firstSubvectorStart + 1;
+    int secondSubvectorSize = secondSubvectorEnd - secondSubvectorStart + 1;
+
+    if (firstSubvectorSize <= secondSubvectorSize)
+    {
+        sortPlayers(players, firstSubvectorStart, firstSubvectorEnd);
+        sortPlayers(players, secondSubvectorStart, secondSubvectorEnd);
+    }
+    else
+    {
+        sortPlayers(players, secondSubvectorStart, secondSubvectorEnd);
+        sortPlayers(players, firstSubvectorStart, firstSubvectorEnd);
+    }
+}
+
 char** initDefaultMatrix(size_t rowCount, size_t colCount, char defaultSymbol)
 {
     char** matrix = new char* [rowCount];
