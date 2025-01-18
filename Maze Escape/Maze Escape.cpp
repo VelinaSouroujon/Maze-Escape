@@ -11,8 +11,10 @@ const char KEY = '&';
 const char TREASURE = 'X';
 const char PLAYER = '@';
 
+const int MIN_LEVEL = 1;
 const int MAX_LEVEL = 3;
 const int DEFAULT_LIVES = 3;
+const int NAME_MIN_LENGTH = 2;
 const int NAME_MAX_LENGTH = 51;
 
 struct MapCoordinate
@@ -873,6 +875,41 @@ bool getPlayerByName(const char* name, Player& player)
     return true;
 }
 
+int getDigitsCount(int num)
+{
+    if (num == 0)
+    {
+        return 1;
+    }
+
+    int digitsCount = 0;
+
+    while (num != 0)
+    {
+        num /= 10;
+        digitsCount++;
+    }
+
+    return digitsCount;
+}
+
+char* intToString(size_t num)
+{
+    int digitsCount = getDigitsCount(num);
+    char* strNum = new char[digitsCount + 1];
+    strNum[digitsCount] = '\0';
+    int idx = digitsCount - 1;
+
+    while(idx >= 0)
+    {
+        strNum[idx] = (num % 10) + '0';
+        num /= 10;
+        idx--;
+    } 
+
+    return strNum;
+}
+
 void swap(int& first, int& second)
 {
     int temp = first;
@@ -894,6 +931,29 @@ int getRandomNumber(int min, int max)
 
     int random = min + rand() % (max - min + 1);
     return random;
+}
+
+char* getMapFilePath(size_t level, size_t mapsCount)
+{
+    if (level > MAX_LEVEL)
+    {
+        return nullptr;
+    }
+
+    const char mapsDirPath[] = "../Maps";
+    char* strLevel = intToString(level);
+
+    int mapNumber = getRandomNumber(1, mapsCount);
+    char* strMapNumber = intToString(mapNumber);
+
+    const int foldersCount = 3;
+    const char* mapsPathLevel[foldersCount] = { mapsDirPath, strLevel, strMapNumber };
+    char* filePath = getFilePath(mapsPathLevel, foldersCount);
+
+    delete[] strLevel;
+    delete[] strMapNumber;
+
+    return filePath;
 }
 
 void playGame(Game& game, Player& player)
