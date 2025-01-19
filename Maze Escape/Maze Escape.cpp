@@ -1207,6 +1207,15 @@ void playGame(Game& game, Player& player)
     player.savedGamesPerLevel[game.level - 1].map.matrix = nullptr;
 }
 
+void logIn(Player& player)
+{
+    while (!getPlayerByName(player.name, player))
+    {
+        std::cout << "Name does not exist!" << std::endl;
+        enterUsername(player);
+    }
+}
+
 void signUp(Player& player)
 {
     while (!appendPlayerNameToFile(player.name))
