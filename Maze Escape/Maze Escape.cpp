@@ -881,6 +881,18 @@ bool appendPlayerNameToFile(const char* name)
     return true;
 }
 
+void enterUsername(Player& player)
+{
+    std::cout << "Please enter username:" << std::endl;
+    std::cin.getline(player.name, NAME_MAX_LENGTH);
+
+    while (getStrLen(player.name) < NAME_MIN_LENGTH)
+    {
+        std::cout << "Your name must have at least " << NAME_MIN_LENGTH << " symbols. Please, try again!" << std::endl;
+        std::cin.getline(player.name, NAME_MAX_LENGTH);
+    }
+}
+
 bool savePlayerGames(std::ofstream& outFile, const Player& player)
 {
     if (!outFile.is_open())
@@ -1193,6 +1205,17 @@ void playGame(Game& game, Player& player)
 
     deleteMatrix(game.map.matrix, game.map.rowsCount);
     player.savedGamesPerLevel[game.level - 1].map.matrix = nullptr;
+}
+
+void signUp(Player& player)
+{
+    while (!appendPlayerNameToFile(player.name))
+    {
+        std::cout << "Name already exists!" << std::endl;
+        enterUsername(player);
+    }
+
+    savePlayerProgress(player);
 }
 
 }
