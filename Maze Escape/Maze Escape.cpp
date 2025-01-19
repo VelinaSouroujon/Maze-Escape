@@ -1293,6 +1293,21 @@ void playGame(Game& game, Player& player)
     player.savedGamesPerLevel[game.level - 1].map.matrix = nullptr;
 }
 
+void deleteSavedGames(Player& player)
+{
+    for (size_t i = 0; i < player.level; i++)
+    {
+        Game& savedGame = player.savedGamesPerLevel[i];
+
+        if (savedGame.map.matrix == nullptr)
+        {
+            continue;
+        }
+
+        deleteMatrix(savedGame.map.matrix, savedGame.map.rowsCount);
+    }
+}
+
 void logIn(Player& player)
 {
     while (!getPlayerByName(player.name, player))
@@ -1345,6 +1360,12 @@ void displayPlayerInfo(const Player& player)
     std::cout << "Level: " << player.level << std::endl;
     std::cout << "Lives: " << player.lives << std::endl;
     std::cout << "Coins: " << player.coins << std::endl;
+}
+
+void exit(Player& player)
+{
+    savePlayerProgress(player);
+    deleteSavedGames(player);
 }
 
 }
