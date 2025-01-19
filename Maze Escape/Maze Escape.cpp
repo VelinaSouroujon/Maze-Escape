@@ -1337,6 +1337,16 @@ void showLeaderboard(const Player& player)
     std::cout << "You are number " << playerRank << " in the leaderboard" << std::endl;
 }
 
+void displayPlayerInfo(const Player& player)
+{
+    clearConsole();
+
+    std::cout << "Name: " << player.name << std::endl;
+    std::cout << "Level: " << player.level << std::endl;
+    std::cout << "Lives: " << player.lives << std::endl;
+    std::cout << "Coins: " << player.coins << std::endl;
+}
+
 }
 
 int main()
