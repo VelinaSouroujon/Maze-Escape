@@ -11,6 +11,8 @@ const char KEY = '&';
 const char TREASURE = 'X';
 const char PLAYER = '@';
 
+const char QUIT = 'q';
+
 const char UP = 'w';
 const char DOWN = 's';
 const char LEFT = 'a';
@@ -21,6 +23,17 @@ const int MAX_LEVEL = 3;
 const int DEFAULT_LIVES = 3;
 const int NAME_MIN_LENGTH = 2;
 const int NAME_MAX_LENGTH = 51;
+
+enum MoveResult
+{
+    NONE,
+    WALL_HIT,
+    COIN_COLLECTED,
+    KEY_FOUND,
+    TELEPORTATION,
+    TREASURE_WITHOUT_KEY,
+    TREASURE_WITH_KEY
+};
 
 struct MapCoordinate
 {
@@ -39,7 +52,6 @@ struct Map
 struct Game
 {
     bool keyFound = false;
-    bool treasureFound = false;
     int coinsCollected = 0;
     int totalCoins;
     int level;
@@ -328,11 +340,14 @@ void printGameInfo(const Game& game, const Player& player)
 
 void printRulesToMove()
 {
-    std::cout << "Press the keys below to move: " << std::endl;
+    std::cout << "Press one of the keys below:" << std::endl;
     std::cout << "W - Up" << std::endl;
     std::cout << "S - Down" << std::endl;
     std::cout << "A - Left" << std::endl;
     std::cout << "D - Right" << std::endl;
+    std::cout << "Q - Quit the level saving the progress" << std::endl;
+}
+
 int readNumber()
 {
     int num;
@@ -483,7 +498,7 @@ MapCoordinate findNextPortal(const Map& map, const MapCoordinate& currPortal)
     return nextPortal;
 }
 
-void move(Player& player, Game& game, char playerMove)
+MoveResult move(Player& player, Game& game, char playerMove)
 {
     char** matrix = game.map.matrix;
     MapCoordinate& plCoordinate = game.map.playerPosition;
@@ -491,55 +506,68 @@ void move(Player& player, Game& game, char playerMove)
 
     if (matrix == nullptr)
     {
-        return;
+        return NONE;
     }
 
     if (!changePosition(newPosition, playerMove))
     {
-        return;
+        return NONE;
     }
 
     if (!isValidCoordinate(newPosition, game.map.rowsCount, game.map.colsCount))
     {
-        return;
+        return NONE;
     }
 
     switch (matrix[newPosition.rowIdx][newPosition.colIdx])
     {
     case WALL:
         player.lives--;
-        break;
+        return WALL_HIT;
 
     case SPACE:
         plCoordinate = newPosition;
-        break;
+        return NONE;
 
     case COIN:
         game.coinsCollected++;
         plCoordinate = newPosition;
         matrix[newPosition.rowIdx][newPosition.colIdx] = SPACE;
-        break;
+        return COIN_COLLECTED;
 
     case KEY:
         game.keyFound = true;
         plCoordinate = newPosition;
         matrix[newPosition.rowIdx][newPosition.colIdx] = SPACE;
-        break;
+        return KEY_FOUND;
 
     case PORTAL:
         plCoordinate = findNextPortal(game.map, newPosition);
-        break;
+        return TELEPORTATION;
 
     case TREASURE:
         plCoordinate = newPosition;
 
         if (game.keyFound)
         {
-            game.treasureFound = true;
+            return TREASURE_WITH_KEY;
         }
 
-        break;
+        return TREASURE_WITHOUT_KEY;
+
+    default:
+        return NONE;
     }
+}
+
+bool winCondition(MoveResult moveRes)
+{
+    return moveRes == TREASURE_WITH_KEY;
+}
+
+bool lossCondition(const Player& player)
+{
+    return player.lives == 0;
 }
 
 
@@ -1063,6 +1091,32 @@ Game setUpGame(Player& player)
     return game;
 }
 
+void printMoveResult(MoveResult moveRes)
+{
+    switch (moveRes)
+    {
+    case WALL_HIT:
+        std::cout << "Ouch! You hit a wall!" << std::endl;
+        break;
+
+    case COIN_COLLECTED:
+        std::cout << "You collected a coin!" << std::endl;
+        break;
+
+    case KEY_FOUND:
+        std::cout << "You found the key! Now find the treasure!" << std::endl;
+        break;
+
+    case TELEPORTATION:
+        std::cout << "Whoosh! You teleported successfully!" << std::endl;
+        break;
+
+    case TREASURE_WITHOUT_KEY:
+        std::cout << "You need a key to open the treasure!" << std::endl;
+        break;
+    }
+}
+
 void playGame(Game& game, Player& player)
 {
     if (game.map.matrix == nullptr)
@@ -1071,29 +1125,26 @@ void playGame(Game& game, Player& player)
     }
 
     char playerMove;
+    MoveResult moveRes = NONE;
 
     while (true)
     {
         clearConsole();
         printGameInfo(game, player);
         printMatrix(game.map);
+        printMoveResult(moveRes);
 
-        if (game.treasureFound)
+        if (winCondition(moveRes))
         {
-            player.coins += game.coinsCollected;
-
-            if ((game.level != MAX_LEVEL)
-                && player.level == game.level)
-            {
-                player.level++;
-            }
-
+            winUpdate(game, player);
+            clearConsole();
             std::cout << "Congratulations! You win!" << std::endl;
             break;
         }
-        if (player.lives == 0)
+        if (lossCondition(player))
         {
-            player.lives = DEFAULT_LIVES;
+            lossUpdate(player);
+            clearConsole();
             std::cout << "You lose! Better luck next game!" << std::endl;
             break;
         }
@@ -1103,11 +1154,18 @@ void playGame(Game& game, Player& player)
         std::cin >> playerMove;
         if (toLower(playerMove) == QUIT)
         {
+            player.savedGamesPerLevel[game.level - 1] = game;
+            clearConsole();
             return;
         }
 
-        move(player, game, playerMove);
+        moveRes = move(player, game, playerMove);
     }
+
+    deleteMatrix(game.map.matrix, game.map.rowsCount);
+    player.savedGamesPerLevel[game.level - 1].map.matrix = nullptr;
+}
+
 }
 
 int main()
