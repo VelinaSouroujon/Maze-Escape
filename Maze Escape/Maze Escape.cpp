@@ -217,6 +217,23 @@ char** initMatrix(size_t rows, size_t cols)
     return matrix;
 }
 
+void deleteMatrix(char**& matrix, size_t rows)
+{
+    if (matrix == nullptr)
+    {
+        return;
+    }
+
+    for (size_t i = 0; i < rows; i++)
+    {
+        delete[] matrix[i];
+    }
+
+    delete[] matrix;
+
+    matrix = nullptr;
+}
+
 bool readMatrix(std::ifstream& inMap, Game& game)
 {
     if (!inMap.is_open())
@@ -235,6 +252,11 @@ bool readMatrix(std::ifstream& inMap, Game& game)
             {
                 inMap.get(ch);
             } while (ch == '\n');
+
+            if (inMap.eof())
+            {
+                return false;
+            }
 
             if (ch == PLAYER)
             {
@@ -268,7 +290,11 @@ bool readGame(Game& game, std::ifstream& inMap)
     inMap.ignore();
 
     map.matrix = initMatrix(map.rowsCount, map.colsCount);
-    readMatrix(inMap, game);
+    if (!readMatrix(inMap, game))
+    {
+        deleteMatrix(map.matrix, map.rowsCount);
+        return false;
+    }
 
     return true;
 }
@@ -300,23 +326,6 @@ void printMatrix(const Map& map)
         std::cout << std::endl;
     }
     std::cout << std::endl;
-}
-
-void deleteMatrix(char**& matrix, size_t rows)
-{
-    if (matrix == nullptr)
-    {
-        return;
-    }
-
-    for (size_t i = 0; i < rows; i++)
-    {
-        delete[] matrix[i];
-    }
-
-    delete[] matrix;
-
-    matrix = nullptr;
 }
 
 void printGameInfo(const Game& game, const Player& player)
