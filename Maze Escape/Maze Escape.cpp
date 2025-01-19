@@ -579,6 +579,26 @@ bool lossCondition(const Player& player)
     return player.lives == 0;
 }
 
+void winUpdate(const Game& game, Player& player)
+{
+    if (game.map.matrix == nullptr)
+    {
+        return;
+    }
+
+    player.coins += game.coinsCollected;
+
+    if ((game.level != MAX_LEVEL)
+        && player.level == game.level)
+    {
+        player.level++;
+    }
+}
+
+void lossUpdate(Player& player)
+{
+    player.lives = DEFAULT_LIVES;
+}
 
 bool savePlayerInfo(std::ofstream& outFile, const Player& player)
 {
