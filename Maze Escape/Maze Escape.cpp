@@ -56,6 +56,12 @@ void clearConsole()
     std::cout << "\033[J"; // Clears the console
 }
 
+bool isInRange(int value, int from, int to)
+{
+    return value >= from
+        && value <= to;
+}
+
 void swapPlayers(std::vector<Player>& players, size_t firstIdx, size_t secondIdx)
 {
     if (firstIdx >= players.size() || secondIdx >= players.size())
@@ -322,6 +328,53 @@ void printRulesToMove()
     std::cout << "S - Down" << std::endl;
     std::cout << "A - Left" << std::endl;
     std::cout << "D - Right" << std::endl;
+int readNumber()
+{
+    int num;
+    std::cin >> num;
+
+    while (std::cin.fail())
+    {
+        std::cout << "Invalid input! Please enter a number." << std::endl;
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin >> num;
+    }
+
+    return num;
+}
+
+int getNumberInRange(int from, int to)
+{
+    int num = readNumber();
+
+    while (!isInRange(num, from, to))
+    {
+        std::cout << "Invalid number! Please enter a number between " << from << " and " << to << std::endl;
+        num = readNumber();
+    }
+
+    return num;
+}
+
+bool inputYesNo(const char* question)
+{
+    if (question == nullptr)
+    {
+        return false;
+    }
+
+    std::cout << question;
+    std::cout << " Enter one of the numbers below:" << std::endl;
+
+    const int YES = 1;
+    const int NO = 2;
+
+    std::cout << YES << ") Yes" << std::endl;
+    std::cout << NO << ") No" << std::endl;
+
+    int optionNumber = getNumberInRange(YES, NO);
+    return optionNumber == YES;
 }
 
 char toLower(char ch)
@@ -954,6 +1007,55 @@ char* getMapFilePath(size_t level, size_t mapsCount)
     delete[] strMapNumber;
 
     return filePath;
+}
+
+int getGameLevel(const Player& player)
+{
+    int maxLevel = player.level;
+
+    if (maxLevel == MIN_LEVEL)
+    {
+        return maxLevel;
+    }
+
+    std::cout << "Please enter the level you want to play. It must be between " << MIN_LEVEL << " and " << maxLevel << std::endl;
+    return getNumberInRange(MIN_LEVEL, maxLevel);
+}
+
+Game setUpGame(Player& player)
+{
+    int level = getGameLevel(player);
+    Game& savedGame = player.savedGamesPerLevel[level - 1];
+
+    if (savedGame.map.matrix != nullptr)
+    {
+        bool continuePrevGame = inputYesNo("Would you like to continue from where you left off?");
+
+        if (continuePrevGame)
+        {
+            return savedGame;
+        }
+
+        deleteMatrix(savedGame.map.matrix, savedGame.map.rowsCount);
+    }
+
+    Game game = {};
+    game.level = level;
+
+    const int MAPS_COUNT = 2;
+
+    char* filePath = getMapFilePath(game.level, MAPS_COUNT);
+    std::ifstream mapFile(filePath);
+    delete[] filePath;
+
+    if (!mapFile.is_open())
+    {
+        return game;
+    }
+
+    readGame(game, mapFile);
+    mapFile.close();
+    return game;
 }
 
 void playGame(Game& game, Player& player)
