@@ -11,6 +11,11 @@ const char KEY = '&';
 const char TREASURE = 'X';
 const char PLAYER = '@';
 
+const char UP = 'w';
+const char DOWN = 's';
+const char LEFT = 'a';
+const char RIGHT = 'd';
+
 const int MIN_LEVEL = 1;
 const int MAX_LEVEL = 3;
 const int DEFAULT_LIVES = 3;
@@ -398,19 +403,19 @@ bool changePosition(MapCoordinate& pCoordinate, char playerMove)
 
     switch (playerMove)
     {
-    case 'w':
+    case UP:
         pCoordinate.rowIdx--;
         break;
 
-    case 's':
+    case DOWN:
         pCoordinate.rowIdx++;
         break;
 
-    case 'a':
+    case LEFT:
         pCoordinate.colIdx--;
         break;
 
-    case 'd':
+    case RIGHT:
         pCoordinate.colIdx++;
         break;
 
