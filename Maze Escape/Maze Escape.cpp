@@ -1401,6 +1401,14 @@ Player enterApp()
     return player;
 }
 
+void signOut(Player& player)
+{
+    exit(player);
+    clearConsole();
+    std::cout << "You successfully signed out." << std::endl;
+    player = enterApp();
+}
+
 }
 
 int main()
