@@ -2,6 +2,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <time.h>
+#include <vector>
 
 const char SPACE = ' ';
 const char WALL = '#';
@@ -77,6 +78,17 @@ bool isInRange(int value, int from, int to)
 {
     return value >= from
         && value <= to;
+}
+
+void printPlayerInfo(const Player& player)
+{
+    std::cout << player.name << ": ";
+
+    std::cout << player.level << " level; ";
+    std::cout << player.coins << " coins; ";
+    std::cout << player.lives << " lives";
+
+    std::cout << std::endl;
 }
 
 void swapPlayers(std::vector<Player>& players, size_t firstIdx, size_t secondIdx)
@@ -414,6 +426,36 @@ char toLower(char ch)
     }
 
     return ch;
+}
+
+int strCompare(const char* str1, const char* str2)
+{
+    if (str1 == nullptr || str2 == nullptr)
+    {
+        return -2;
+    }
+
+    while (true)
+    {
+        unsigned char ch1 = (unsigned char)*str1;
+        unsigned char ch2 = (unsigned char)*str2;
+
+        if (ch1 < ch2)
+        {
+            return -1;
+        }
+        if (ch1 > ch2)
+        {
+            return 1;
+        }
+        if (ch1 == '\0')
+        {
+            return 0;
+        }
+
+        str1++;
+        str2++;
+    }
 }
 
 bool isValidCoordinate(const MapCoordinate& coordinate, int rows, int cols)
@@ -1096,6 +1138,50 @@ int getGameLevel(const Player& player)
     return getNumberInRange(MIN_LEVEL, maxLevel);
 }
 
+std::vector<Player> getAllPlayers(const Player& player)
+{
+    std::vector<Player> allPlayers;
+    char* namesFilePath = getPlayerNamesFilePath();
+
+    std::ifstream finPlayerNames(namesFilePath);
+    delete[] namesFilePath;
+
+    if (!finPlayerNames.is_open())
+    {
+        return allPlayers;
+    }
+
+    char playerNameToLower[NAME_MAX_LENGTH];
+    strToLower(player.name, playerNameToLower);
+    char name[NAME_MAX_LENGTH];
+
+    while (finPlayerNames.getline(name, NAME_MAX_LENGTH))
+    {
+        if (strCompare(playerNameToLower, name) == 0)
+        {
+            allPlayers.push_back(player);
+            continue;
+        }
+
+        char* playerFilePath = getPlayerFilePath(name);
+        std::ifstream finPlayer(playerFilePath);
+        delete[] playerFilePath;
+
+        Player currPlayer = {};
+        if (!readPlayerInfo(finPlayer, currPlayer))
+        {
+            finPlayerNames.close();
+            return allPlayers;
+        }
+
+        finPlayer.close();
+        allPlayers.push_back(currPlayer);
+    }
+
+    finPlayerNames.close();
+    return allPlayers;
+}
+
 Game setUpGame(Player& player)
 {
     int level = getGameLevel(player);
@@ -1225,6 +1311,30 @@ void signUp(Player& player)
     }
 
     savePlayerProgress(player);
+}
+
+void showLeaderboard(const Player& player)
+{
+    clearConsole();
+    size_t playerRank = 1;
+
+    std::vector<Player> allPlayers = getAllPlayers(player);
+    size_t playersCount = allPlayers.size();
+    sortPlayers(allPlayers, 0, playersCount - 1);
+
+    for (size_t i = 0; i < playersCount; i++)
+    {
+        size_t currRank = i + 1;
+        if (strCompare(player.name, allPlayers[i].name) == 0)
+        {
+            playerRank = currRank;
+        }
+
+        std::cout << currRank << ". ";
+        printPlayerInfo(allPlayers[i]);
+    }
+
+    std::cout << "You are number " << playerRank << " in the leaderboard" << std::endl;
 }
 
 }
