@@ -1378,6 +1378,30 @@ void exit(Player& player)
     deleteSavedGames(player);
 }
 
+int displayMenuOptions()
+{
+    int optionsCount = 0;
+
+    std::cout << "Please enter one of the numbers below to choose an option:" << std::endl;
+    std::cout << ++optionsCount << ") " << "Play a game" << std::endl;
+    std::cout << ++optionsCount << ") " << "View info" << std::endl;
+    std::cout << ++optionsCount << ") " << "View leaderboard" << std::endl;
+    std::cout << ++optionsCount << ") " << "Sign out" << std::endl;
+    std::cout << ++optionsCount << ") " << "Exit" << std::endl;
+
+    return optionsCount;
+}
+
+void pressKeyToContinue()
+{
+    std::cout << "Press any key to return to menu" << std::endl;
+
+    std::cin.get();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    clearConsole();
+}
+
 Player enterApp()
 {
     Player player = {};
@@ -1409,9 +1433,52 @@ void signOut(Player& player)
     player = enterApp();
 }
 
+bool selectMenuOption(Player& player)
+{
+    int optionsCount = displayMenuOptions();
+    int selectedOption = getNumberInRange(1, optionsCount);
+
+    switch (selectedOption)
+    {
+    case 1:
+    {
+        Game game = setUpGame(player);
+        playGame(game, player);
+    }
+    break;
+
+    case 2:
+        displayPlayerInfo(player);
+        pressKeyToContinue();
+        break;
+
+    case 3:
+        showLeaderboard(player);
+        pressKeyToContinue();
+        break;
+
+    case 4:
+        signOut(player);
+        break;
+
+    case 5:
+        exit(player);
+        return false;
+    }
+
+    return true;
+}
+
+void run()
+{
+    initRandom();
+    Player player = enterApp();
+    while (selectMenuOption(player));
 }
 
 int main()
 {
+    run();
+
     return 0;
 }
