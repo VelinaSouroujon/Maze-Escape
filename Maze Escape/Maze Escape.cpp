@@ -398,6 +398,16 @@ int getNumberInRange(int from, int to)
     return num;
 }
 
+int getInputOption()
+{
+    std::cout << "Please choose one of the following options:" << std::endl;
+    std::cout << "1) Log in" << std::endl;
+    std::cout << "2) Sign up" << std::endl;
+
+    int inputOption = getNumberInRange(1, 2);
+    return inputOption;
+}
+
 bool inputYesNo(const char* question)
 {
     if (question == nullptr)
@@ -1366,6 +1376,29 @@ void exit(Player& player)
 {
     savePlayerProgress(player);
     deleteSavedGames(player);
+}
+
+Player enterApp()
+{
+    Player player = {};
+    int optionNum = getInputOption();
+
+    std::cin.ignore();
+    enterUsername(player);
+
+    if (optionNum == 1)
+    {
+        logIn(player);
+    }
+    else if (optionNum == 2)
+    {
+        signUp(player);
+    }
+
+    clearConsole();
+    std::cout << "Welcome " << player.name << std::endl;
+
+    return player;
 }
 
 }
