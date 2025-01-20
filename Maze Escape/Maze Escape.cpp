@@ -71,7 +71,8 @@ struct Player
 void clearConsole()
 {
     std::cout << "\033[;H"; // Moves cursor to the top left
-    std::cout << "\033[J"; // Clears the console
+    std::cout << "\033[2J"; // Clears the entire screen
+    std::cout << "\033[3J"; // Clears the scrollback buffer
 }
 
 bool isInRange(int value, int from, int to)
