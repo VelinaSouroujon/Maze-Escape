@@ -11,6 +11,9 @@ const char PORTAL = '%';
 const char KEY = '&';
 const char TREASURE = 'X';
 const char PLAYER = '@';
+const char ENEMY = 'E';
+
+const char VISITED = 'V';
 
 const char QUIT = 'q';
 
@@ -42,12 +45,21 @@ struct MapCoordinate
     size_t colIdx;
 };
 
+struct VisitedCell
+{
+    char originalContent;
+    int steps;
+    int parentIndex;
+    MapCoordinate coordinate;
+};
+
 struct Map
 {
     int rowsCount;
     int colsCount;
     char** matrix;
     MapCoordinate playerPosition;
+    MapCoordinate enemyPosition;
 };
 
 struct Game
@@ -276,10 +288,16 @@ bool readMatrix(std::ifstream& inMap, Game& game)
                 map.playerPosition = { i, j };
                 map.matrix[i][j] = SPACE;
             }
+            else if (ch == ENEMY)
+            {
+                map.enemyPosition = { i, j };
+                map.matrix[i][j] = SPACE;
+            }
             else
             {
                 map.matrix[i][j] = ch;
             }
+
             if (ch == COIN)
             {
                 game.totalCoins++;
@@ -329,6 +347,11 @@ void printMatrix(const Map& map)
                 && j == map.playerPosition.colIdx)
             {
                 std::cout << PLAYER;
+            }
+            else if (i == map.enemyPosition.rowIdx
+                && j == map.enemyPosition.colIdx)
+            {
+                std::cout << ENEMY;
             }
             else
             {
@@ -474,6 +497,13 @@ bool isValidCoordinate(const MapCoordinate& coordinate, int rows, int cols)
     return coordinate.rowIdx < rows && coordinate.colIdx < cols;
 }
 
+bool isValidEnemyMove(const MapCoordinate& newPosition, const Map& map)
+{
+    return isValidCoordinate(newPosition, map.rowsCount, map.colsCount)
+        && (map.matrix[newPosition.rowIdx][newPosition.colIdx] != WALL)
+        && (map.matrix[newPosition.rowIdx][newPosition.colIdx] != VISITED);
+}
+
 bool changePosition(MapCoordinate& pCoordinate, char playerMove)
 {
     playerMove = toLower(playerMove);
@@ -558,6 +588,104 @@ MapCoordinate findNextPortal(const Map& map, const MapCoordinate& currPortal)
     }
 
     return nextPortal;
+}
+
+MapCoordinate findShortestPath(Map& map, std::vector<VisitedCell>& visitedCells, int enemyStepsPerMove)
+{
+    MapCoordinate enemyNewPosition = {};
+
+    if (map.matrix == nullptr)
+    {
+        return enemyNewPosition;
+    }
+
+    std::vector<MapCoordinate> queue;
+    queue.push_back(map.enemyPosition);
+
+    char originalSymbolAtEnemyPos = map.matrix[map.enemyPosition.rowIdx][map.enemyPosition.colIdx];
+    map.matrix[map.enemyPosition.rowIdx][map.enemyPosition.colIdx] = VISITED;
+    int parentIndex = -1;
+    int initialSteps = 0;
+    visitedCells.push_back({ originalSymbolAtEnemyPos, initialSteps, parentIndex, map.enemyPosition });
+
+    bool pathFound = false;
+
+    while (queue.size() > 0)
+    {
+        parentIndex++;
+
+        MapCoordinate currPosition = queue[0];
+        queue.erase(queue.begin());
+
+        const int directionsRows = 4;
+        const int directionsCols = 2;
+        int directions[directionsRows][directionsCols] = { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } };
+        for (size_t i = 0; i < directionsRows; i++)
+        {
+            size_t newRow = currPosition.rowIdx + directions[i][0];
+            size_t newCol = currPosition.colIdx + directions[i][1];
+            MapCoordinate newPosition = { newRow, newCol };
+
+            if (!isValidEnemyMove(newPosition, map))
+            {
+                continue;
+            }
+
+            char originalSymbol = map.matrix[newRow][newCol];
+            map.matrix[newRow][newCol] = VISITED;
+            int steps = visitedCells[parentIndex].steps + 1;
+            visitedCells.push_back({ originalSymbol, steps, parentIndex, newPosition });        
+
+            if (newRow == map.playerPosition.rowIdx
+                && newCol == map.playerPosition.colIdx)
+            {
+                pathFound = true;
+                break;
+            }
+
+            queue.push_back(newPosition);
+        }
+
+        if (pathFound)
+        {
+            break;
+        }
+    }
+
+    for (size_t i = 0; i < visitedCells.size(); i++)
+    {
+        char originalContent = visitedCells[i].originalContent;
+        size_t row = visitedCells[i].coordinate.rowIdx;
+        size_t col = visitedCells[i].coordinate.colIdx;
+
+        map.matrix[row][col] = originalContent;
+    }
+
+    VisitedCell currCell = visitedCells[visitedCells.size() - 1];
+    int totalSteps = currCell.steps;
+    int stepsBack = totalSteps - enemyStepsPerMove;
+    if (stepsBack <= 0)
+    {
+        return map.playerPosition;
+    }
+
+    for (size_t i = 0; i < stepsBack; i++)
+    {
+        VisitedCell parent = visitedCells[currCell.parentIndex];
+        currCell = parent;
+    }
+
+    /*while (visitedCells[currCell.parentIndex].parentIndex != -1)
+    {
+        VisitedCell parent = visitedCells[currCell.parentIndex];
+        currCell = parent;
+    }*/
+
+    enemyNewPosition = currCell.coordinate;
+
+    visitedCells.clear();
+
+    return enemyNewPosition;
 }
 
 MoveResult move(Player& player, Game& game, char playerMove)
@@ -686,6 +814,11 @@ bool appendMapInfo(std::ofstream& outFile, const Map& map)
                 && j == map.playerPosition.colIdx)
             {
                 outFile << PLAYER;
+            }
+            else if (i == map.enemyPosition.rowIdx
+                && j == map.enemyPosition.colIdx)
+            {
+                outFile << ENEMY;
             }
             else
             {
@@ -1265,6 +1398,10 @@ void playGame(Game& game, Player& player)
     char playerMove;
     MoveResult moveRes = NONE;
 
+    int capacity = (game.map.rowsCount * game.map.colsCount) / 2;
+    std::vector<VisitedCell> visitedCells;
+    visitedCells.reserve(capacity);
+
     while (true)
     {
         clearConsole();
@@ -1298,6 +1435,7 @@ void playGame(Game& game, Player& player)
         }
 
         moveRes = move(player, game, playerMove);
+        game.map.enemyPosition = findShortestPath(game.map, visitedCells, 1);
     }
 
     deleteMatrix(game.map.matrix, game.map.rowsCount);
