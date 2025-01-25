@@ -31,6 +31,7 @@ const int NAME_MAX_LENGTH = 51;
 enum MoveResult
 {
     NONE,
+    INVALID_MOVE,
     WALL_HIT,
     COIN_COLLECTED,
     KEY_FOUND,
@@ -696,17 +697,17 @@ MoveResult move(Player& player, Game& game, char playerMove)
 
     if (matrix == nullptr)
     {
-        return NONE;
+        return INVALID_MOVE;
     }
 
     if (!changePosition(newPosition, playerMove))
     {
-        return NONE;
+        return INVALID_MOVE;
     }
 
     if (!isValidCoordinate(newPosition, game.map.rowsCount, game.map.colsCount))
     {
-        return NONE;
+        return INVALID_MOVE;
     }
 
     switch (matrix[newPosition.rowIdx][newPosition.colIdx])
@@ -746,7 +747,7 @@ MoveResult move(Player& player, Game& game, char playerMove)
         return TREASURE_WITHOUT_KEY;
 
     default:
-        return NONE;
+        return INVALID_MOVE;
     }
 }
 
@@ -1435,7 +1436,10 @@ void playGame(Game& game, Player& player)
         }
 
         moveRes = move(player, game, playerMove);
-        game.map.enemyPosition = findShortestPath(game.map, visitedCells, 1);
+        if (moveRes != INVALID_MOVE)
+        {
+            game.map.enemyPosition = findShortestPath(game.map, visitedCells, 1);
+        }
     }
 
     deleteMatrix(game.map.matrix, game.map.rowsCount);
