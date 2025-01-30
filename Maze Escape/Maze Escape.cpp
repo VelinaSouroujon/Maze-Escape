@@ -591,7 +591,48 @@ MapCoordinate findNextPortal(const Map& map, const MapCoordinate& currPortal)
     return nextPortal;
 }
 
-MapCoordinate findShortestPath(Map& map, std::vector<VisitedCell>& visitedCells, int enemyStepsPerMove)
+void restoreMatrix(Map& map, const std::vector<VisitedCell>& visitedCells)
+{
+    for (size_t i = 0; i < visitedCells.size(); i++)
+    {
+        char originalContent = visitedCells[i].originalContent;
+        size_t row = visitedCells[i].coordinate.rowIdx;
+        size_t col = visitedCells[i].coordinate.colIdx;
+
+        map.matrix[row][col] = originalContent;
+    }
+}
+
+void markVisited(Map& map, const MapCoordinate& position, int parentIndex, int steps, std::vector<VisitedCell>& visitedCells)
+{
+    size_t row = position.rowIdx;
+    size_t col = position.colIdx;
+
+    char originalSymbol = map.matrix[row][col];
+    map.matrix[row][col] = VISITED;
+    visitedCells.push_back({ originalSymbol, steps, parentIndex, position });
+}
+
+MapCoordinate restorePath(const std::vector<VisitedCell>& visitedCells, const Map& map, size_t enemyStepsPerMove)
+{
+    VisitedCell currCell = visitedCells[visitedCells.size() - 1];
+    int totalSteps = currCell.steps;
+    int stepsBack = totalSteps - enemyStepsPerMove;
+    if (stepsBack <= 0)
+    {
+        return map.playerPosition;
+    }
+
+    for (size_t i = 0; i < stepsBack; i++)
+    {
+        VisitedCell parent = visitedCells[currCell.parentIndex];
+        currCell = parent;
+    }
+
+    return currCell.coordinate;
+}
+
+MapCoordinate findShortestPath(Map& map, std::vector<VisitedCell>& visitedCells, size_t enemyStepsPerMove)
 {
     MapCoordinate enemyNewPosition = {};
 
@@ -603,11 +644,9 @@ MapCoordinate findShortestPath(Map& map, std::vector<VisitedCell>& visitedCells,
     std::vector<MapCoordinate> queue;
     queue.push_back(map.enemyPosition);
 
-    char originalSymbolAtEnemyPos = map.matrix[map.enemyPosition.rowIdx][map.enemyPosition.colIdx];
-    map.matrix[map.enemyPosition.rowIdx][map.enemyPosition.colIdx] = VISITED;
     int parentIndex = -1;
-    int initialSteps = 0;
-    visitedCells.push_back({ originalSymbolAtEnemyPos, initialSteps, parentIndex, map.enemyPosition });
+    const int initialSteps = 0;
+    markVisited(map, map.enemyPosition, parentIndex, initialSteps, visitedCells);
 
     bool pathFound = false;
 
@@ -632,10 +671,8 @@ MapCoordinate findShortestPath(Map& map, std::vector<VisitedCell>& visitedCells,
                 continue;
             }
 
-            char originalSymbol = map.matrix[newRow][newCol];
-            map.matrix[newRow][newCol] = VISITED;
             int steps = visitedCells[parentIndex].steps + 1;
-            visitedCells.push_back({ originalSymbol, steps, parentIndex, newPosition });        
+            markVisited(map, newPosition, parentIndex, steps, visitedCells);
 
             if (newRow == map.playerPosition.rowIdx
                 && newCol == map.playerPosition.colIdx)
@@ -653,39 +690,10 @@ MapCoordinate findShortestPath(Map& map, std::vector<VisitedCell>& visitedCells,
         }
     }
 
-    for (size_t i = 0; i < visitedCells.size(); i++)
-    {
-        char originalContent = visitedCells[i].originalContent;
-        size_t row = visitedCells[i].coordinate.rowIdx;
-        size_t col = visitedCells[i].coordinate.colIdx;
-
-        map.matrix[row][col] = originalContent;
-    }
-
-    VisitedCell currCell = visitedCells[visitedCells.size() - 1];
-    int totalSteps = currCell.steps;
-    int stepsBack = totalSteps - enemyStepsPerMove;
-    if (stepsBack <= 0)
-    {
-        return map.playerPosition;
-    }
-
-    for (size_t i = 0; i < stepsBack; i++)
-    {
-        VisitedCell parent = visitedCells[currCell.parentIndex];
-        currCell = parent;
-    }
-
-    /*while (visitedCells[currCell.parentIndex].parentIndex != -1)
-    {
-        VisitedCell parent = visitedCells[currCell.parentIndex];
-        currCell = parent;
-    }*/
-
-    enemyNewPosition = currCell.coordinate;
-
+    restoreMatrix(map, visitedCells);
+    enemyNewPosition = restorePath(visitedCells, map, enemyStepsPerMove);
     visitedCells.clear();
-
+    
     return enemyNewPosition;
 }
 
