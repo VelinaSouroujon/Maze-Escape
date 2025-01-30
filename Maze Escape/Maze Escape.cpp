@@ -94,6 +94,12 @@ bool isInRange(int value, int from, int to)
         && value <= to;
 }
 
+bool isSamePosition(const MapCoordinate& firstPosition, const MapCoordinate& secondPosition)
+{
+    return firstPosition.rowIdx == secondPosition.rowIdx
+        && firstPosition.colIdx == secondPosition.colIdx;
+}
+
 void printPlayerInfo(const Player& player)
 {
     std::cout << player.name << ": ";
@@ -344,13 +350,13 @@ void printMatrix(const Map& map)
     {
         for (size_t j = 0; j < map.colsCount; j++)
         {
-            if (i == map.playerPosition.rowIdx
-                && j == map.playerPosition.colIdx)
+            MapCoordinate currPosition = { i, j };
+
+            if (isSamePosition(currPosition, map.playerPosition))
             {
                 std::cout << PLAYER;
             }
-            else if (i == map.enemyPosition.rowIdx
-                && j == map.enemyPosition.colIdx)
+            else if (isSamePosition(currPosition, map.enemyPosition))
             {
                 std::cout << ENEMY;
             }
@@ -819,13 +825,13 @@ bool appendMapInfo(std::ofstream& outFile, const Map& map)
     {
         for (size_t j = 0; j < map.colsCount; j++)
         {
-            if (i == map.playerPosition.rowIdx
-                && j == map.playerPosition.colIdx)
+            MapCoordinate currPosition = { i, j };
+
+            if (isSamePosition(currPosition, map.playerPosition))
             {
                 outFile << PLAYER;
             }
-            else if (i == map.enemyPosition.rowIdx
-                && j == map.enemyPosition.colIdx)
+            else if (isSamePosition(currPosition, map.enemyPosition))
             {
                 outFile << ENEMY;
             }
