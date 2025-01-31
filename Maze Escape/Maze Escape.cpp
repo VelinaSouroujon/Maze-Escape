@@ -1,8 +1,11 @@
+#define NOMINMAX
+
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
+#include <Windows.h>
 
 const char SPACE = ' ';
 const char WALL = '#';
@@ -87,6 +90,12 @@ void clearConsole()
     std::cout << "\033[;H"; // Moves cursor to the top left
     std::cout << "\033[2J"; // Clears the entire screen
     std::cout << "\033[3J"; // Clears the scrollback buffer
+}
+
+void setConsoleColor(int colorNumber)
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, colorNumber);
 }
 
 bool isInRange(int value, int from, int to)
@@ -345,6 +354,10 @@ void printMatrix(const Map& map)
         return;
     }
 
+    const int greenColor = 2;
+    const int redColor = 4;
+    const int whiteColor = 7;
+
     std::cout << std::endl;
 
     for (size_t i = 0; i < map.rowsCount; i++)
@@ -355,11 +368,15 @@ void printMatrix(const Map& map)
 
             if (isSamePosition(currPosition, map.playerPosition))
             {
+                setConsoleColor(greenColor);
                 std::cout << PLAYER;
+                setConsoleColor(whiteColor);
             }
             else if (isSamePosition(currPosition, map.enemyPosition))
             {
+                setConsoleColor(redColor);
                 std::cout << ENEMY;
+                setConsoleColor(whiteColor);
             }
             else
             {
