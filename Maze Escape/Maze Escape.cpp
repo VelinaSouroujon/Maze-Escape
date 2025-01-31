@@ -32,6 +32,10 @@ const int NAME_MIN_LENGTH = 2;
 const int NAME_MAX_LENGTH = 51;
 const int LIFE_PRICE = 50;
 
+const int GREEN_COLOR = 2;
+const int RED_COLOR = 4;
+const int WHITE_COLOR = 7;
+
 enum MoveResult
 {
     NONE,
@@ -347,16 +351,19 @@ bool readGame(Game& game, std::ifstream& inMap)
     return true;
 }
 
-void printMatrix(const Map& map)
+void printCharWithColorAndReset(char ch, int color)
+{
+    setConsoleColor(color);
+    std::cout << ch;
+    setConsoleColor(WHITE_COLOR);
+}
+
+void printMatrix(const Map& map, int playerColor, int enemyColor)
 {
     if (map.matrix == nullptr)
     {
         return;
     }
-
-    const int greenColor = 2;
-    const int redColor = 4;
-    const int whiteColor = 7;
 
     std::cout << std::endl;
 
@@ -368,15 +375,11 @@ void printMatrix(const Map& map)
 
             if (isSamePosition(currPosition, map.playerPosition))
             {
-                setConsoleColor(greenColor);
-                std::cout << PLAYER;
-                setConsoleColor(whiteColor);
+                printCharWithColorAndReset(PLAYER, playerColor);
             }
             else if (isSamePosition(currPosition, map.enemyPosition))
             {
-                setConsoleColor(redColor);
-                std::cout << ENEMY;
-                setConsoleColor(whiteColor);
+                printCharWithColorAndReset(ENEMY, enemyColor);
             }
             else
             {
@@ -1439,7 +1442,7 @@ void playGame(Game& game, Player& player)
     {
         clearConsole();
         printGameInfo(game, player);
-        printMatrix(game.map);
+        printMatrix(game.map, GREEN_COLOR, RED_COLOR);
         printMoveResult(moveRes);
 
         if (winCondition(moveRes))
