@@ -27,6 +27,7 @@ const int MAX_LEVEL = 3;
 const int DEFAULT_LIVES = 3;
 const int NAME_MIN_LENGTH = 2;
 const int NAME_MAX_LENGTH = 51;
+const int LIFE_PRICE = 50;
 
 enum MoveResult
 {
@@ -1519,6 +1520,56 @@ void showLeaderboard(const Player& player)
     std::cout << "You are number " << playerRank << " in the leaderboard" << std::endl;
 }
 
+void buyLives(Player& player)
+{
+    clearConsole();
+
+    const int returnToMenu = 0;
+    const int maxLivesToBuy = 100;
+
+    int initialLives = player.lives;
+    int inputNum;
+
+    while (true)
+    {
+        std::cout << "One life costs " << LIFE_PRICE << " coins" << std::endl;
+        std::cout << "You have " << player.coins << " coins." << std::endl;
+        std::cout << "Enter the number of lives you want to buy or " << returnToMenu << " to return to menu:" << std::endl;
+
+        inputNum = getNumberInRange(returnToMenu, maxLivesToBuy);
+        clearConsole();
+
+        if (inputNum == returnToMenu)
+        {
+            break;
+        }
+
+        int cost = inputNum * LIFE_PRICE;
+
+        if (player.coins < cost)
+        {
+            std::cout << "Not enough coins! You need " << cost << " coins to buy " << inputNum << " lives!" << std::endl;
+            continue;
+        }
+
+        std::cout << "You are about to buy " << inputNum << " lives for " << cost << " coins" << std::endl;
+        bool acceptToBuy = inputYesNo("Are you sure you want to make this purchase?");
+        clearConsole();
+
+        if (acceptToBuy)
+        {
+            player.lives += inputNum;
+            player.coins -= cost;
+            break;
+        }
+    }
+
+    if (player.lives > initialLives)
+    {
+        std::cout << "You successfully bought " << player.lives - initialLives << " lives" << std::endl;
+    }
+}
+
 void displayPlayerInfo(const Player& player)
 {
     clearConsole();
@@ -1541,6 +1592,7 @@ int displayMenuOptions()
 
     std::cout << "Please enter one of the numbers below to choose an option:" << std::endl;
     std::cout << ++optionsCount << ") " << "Play a game" << std::endl;
+    std::cout << ++optionsCount << ") " << "Buy lives" << std::endl;
     std::cout << ++optionsCount << ") " << "View info" << std::endl;
     std::cout << ++optionsCount << ") " << "View leaderboard" << std::endl;
     std::cout << ++optionsCount << ") " << "Sign out" << std::endl;
@@ -1605,20 +1657,24 @@ bool selectMenuOption(Player& player)
     break;
 
     case 2:
+        buyLives(player);
+        break;
+
+    case 3:
         displayPlayerInfo(player);
         pressKeyToContinue();
         break;
 
-    case 3:
+    case 4:
         showLeaderboard(player);
         pressKeyToContinue();
         break;
 
-    case 4:
+    case 5:
         signOut(player);
         break;
 
-    case 5:
+    case 6:
         exit(player);
         return false;
     }
