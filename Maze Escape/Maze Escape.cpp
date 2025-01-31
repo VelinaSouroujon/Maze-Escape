@@ -45,7 +45,8 @@ enum MoveResult
     KEY_FOUND,
     TELEPORTATION,
     TREASURE_WITHOUT_KEY,
-    TREASURE_WITH_KEY
+    TREASURE_WITH_KEY,
+    ENEMY_ENCOUNTER
 };
 
 struct MapCoordinate
@@ -744,6 +745,11 @@ MoveResult move(Player& player, Game& game, char playerMove)
     {
         return INVALID_MOVE;
     }
+    if (isSamePosition(newPosition, game.map.enemyPosition))
+    {
+        player.lives = 0;
+        return ENEMY_ENCOUNTER;
+    }
 
     switch (matrix[newPosition.rowIdx][newPosition.colIdx])
     {
@@ -1402,6 +1408,10 @@ void printMoveResult(MoveResult moveRes)
 {
     switch (moveRes)
     {
+    case ENEMY_ENCOUNTER:
+        std::cout << "You were captured by enemy!" << std::endl;
+        break;
+
     case WALL_HIT:
         std::cout << "Ouch! You hit a wall!" << std::endl;
         break;
@@ -1421,6 +1431,10 @@ void printMoveResult(MoveResult moveRes)
     case TREASURE_WITHOUT_KEY:
         std::cout << "You need a key to open the treasure!" << std::endl;
         break;
+
+    case TREASURE_WITH_KEY:
+        std::cout << "Congratulations! You win!" << std::endl;
+        break;
     }
 }
 
@@ -1431,8 +1445,10 @@ void playGame(Game& game, Player& player)
         return;
     }
 
+    clearConsole();
     char playerMove;
     MoveResult moveRes = NONE;
+    const char lossMessage[] = "You lose! Better luck next game!";
 
     int capacity = (game.map.rowsCount * game.map.colsCount) / 2;
     std::vector<VisitedCell> visitedCells;
@@ -1440,40 +1456,47 @@ void playGame(Game& game, Player& player)
 
     while (true)
     {
-        clearConsole();
         printGameInfo(game, player);
         printMatrix(game.map, GREEN_COLOR, RED_COLOR);
         printMoveResult(moveRes);
+        printRulesToMove();
 
+        std::cin >> playerMove;
+        clearConsole();
+
+        if (toLower(playerMove) == QUIT)
+        {
+            player.savedGamesPerLevel[game.level - 1] = game;
+            return;
+        }
+
+        moveRes = move(player, game, playerMove);
         if (winCondition(moveRes))
         {
             winUpdate(game, player);
-            clearConsole();
-            std::cout << "Congratulations! You win!" << std::endl;
+            printMoveResult(moveRes);
             break;
         }
         if (lossCondition(player))
         {
             lossUpdate(player);
-            clearConsole();
-            std::cout << "You lose! Better luck next game!" << std::endl;
+            printMoveResult(moveRes);
+            std::cout << lossMessage << std::endl;
             break;
         }
-
-        printRulesToMove();
-
-        std::cin >> playerMove;
-        if (toLower(playerMove) == QUIT)
+        if (moveRes == INVALID_MOVE)
         {
-            player.savedGamesPerLevel[game.level - 1] = game;
-            clearConsole();
-            return;
+            continue;
         }
 
-        moveRes = move(player, game, playerMove);
-        if (moveRes != INVALID_MOVE)
+        game.map.enemyPosition = findShortestPath(game.map, visitedCells, 1);
+
+        if (isSamePosition(game.map.playerPosition, game.map.enemyPosition))
         {
-            game.map.enemyPosition = findShortestPath(game.map, visitedCells, 1);
+            lossUpdate(player);
+            printMoveResult(ENEMY_ENCOUNTER);
+            std::cout << lossMessage << std::endl;
+            break;
         }
     }
 
