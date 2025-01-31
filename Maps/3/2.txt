@@ -1,11 +1,21 @@
-10 15
-#@ C#########%#
-##C  #C# C  # C
-## ##C C  #C# #
-C  C# C # ##  C
- ## C ##  #C # 
-C##C # # # # ##
-#C  # # # C# C 
-CC#C #%#C #### 
-C#&# # #  C##  
-##%#C   C ###X#
+20 25
+C&  ## CC# C #  C # CC  E
+%C# C C  CC   C#  C## C# 
+C  C #C#C #%#C  #C C C  C
+ #C # ## C C C# C## # C# 
+##C  # C#C#  # C  C # # C
+ C# C #      CC#C# C C  #
+#  # #CC# C### C C##C#  C
+ C#C#C   #  # ##  C#   # 
+# C  C##CC#C CC  # ## C# 
+C# #C#  C      #C #C #C #
+ C #  C#  C#C# # %    #C 
+#C# #% C # C  C #C# C   C
+C  C ## #C # # C # C #C# 
+# # #    # C# # C  ### C 
+C#C#  C#  C# C  # C    ##
+  C C###C #   ##  ##C#CC 
+CC#CC C  C #% C C#C  C###
+#  # #  ##   #CC#  C#  # 
+ C# C#CC  C#  # C #  #   
+@  C#  #C# C#C  # C#C C#X
