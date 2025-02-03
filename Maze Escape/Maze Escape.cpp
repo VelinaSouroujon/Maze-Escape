@@ -1438,6 +1438,13 @@ void printMoveResult(MoveResult moveRes)
     }
 }
 
+void lossUpdateAndPrint(Player& player, MoveResult moveRes)
+{
+    lossUpdate(player);
+    printMoveResult(moveRes);
+    std::cout << "You lose! Better luck next game!" << std::endl;
+}
+
 void playGame(Game& game, Player& player)
 {
     if (game.map.matrix == nullptr)
@@ -1448,7 +1455,6 @@ void playGame(Game& game, Player& player)
     clearConsole();
     char playerMove;
     MoveResult moveRes = NONE;
-    const char lossMessage[] = "You lose! Better luck next game!";
 
     int capacity = (game.map.rowsCount * game.map.colsCount) / 2;
     std::vector<VisitedCell> visitedCells;
@@ -1481,9 +1487,7 @@ void playGame(Game& game, Player& player)
         }
         if (lossCondition(player))
         {
-            lossUpdate(player);
-            printMoveResult(moveRes);
-            std::cout << lossMessage << std::endl;
+            lossUpdateAndPrint(player, moveRes);
             break;
         }
         if (moveRes == INVALID_MOVE)
@@ -1495,9 +1499,7 @@ void playGame(Game& game, Player& player)
 
         if (isSamePosition(game.map.playerPosition, game.map.enemyPosition))
         {
-            lossUpdate(player);
-            printMoveResult(ENEMY_ENCOUNTER);
-            std::cout << lossMessage << std::endl;
+            lossUpdateAndPrint(player, ENEMY_ENCOUNTER);
             break;
         }
     }
