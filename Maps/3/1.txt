@@ -1,22 +1,22 @@
 20 25
-8
-E ##C ## #C C#   #C #C  %
-#%#C C   # C# C#%C C #C #
-#   # #   #  # C# CC ##C 
- # C # C#  C# #  C# # C #
+9
+EC##C ## #C C   C#C  C C%
+#%#C C#  # C# C#%C C #CC#
+#C  # #   #  # C#CCC ##C 
+ # C # C#  C# #  C# # CC#
 #   #C #   #C%  #&C#C  # 
-C # C # # C  # #  ## #  #
- # # # #%C  # # #  # CC #
-  # CC #  C# # #C#  C#   
- #C ##C C#  C # C #  C#  
-%# #C #C ## #CC # C#    #
-# C  # C  #C  # ## #   # 
-C  # ## #  ## # C%#  # C 
- # C# # C ##  C#  # # # #
+C # C # # C# # # C## #C #
+ # # # #%C  # # #  ##CC #
+  # CC #  C# # #C#  C# C 
+ #C ##C ##  C # C # #C#CC
+%# #C #C ## #CC # C#C C #
+# C  # C  #C  # ## # C # 
+C  # ## #  ## # C%#C # C 
+ # C# # C ##  C# C# # # #
 #  #CC C #C  #  ## C   ##
-C #% ## #   C  # C # # C 
- #  #  ## ## # C##C #C#  
-C# C##C  C   C   C#C  C#C
-#C  C##C#   #   #  ### CC
-C ##  # C # C # C#C C #  
+C #% ## #   #  # C # # C 
+ # C#  ## ## # C##C #C#  
+C# C##C  C   C C C#C  C#C
+#C  C##C#   #  %#  ### CC
+C ##  # C # C # C#C C # C
 @ C# C   ##C  ## # #  #CX
