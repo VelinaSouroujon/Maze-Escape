@@ -1,3 +1,16 @@
+//**
+//*
+//* Solution to course project #3
+//* Introduction to programming course
+//* Faculty of Mathematics and Informatics of Sofia University
+//* Winter semester 2024 / 2025
+//
+//* @author Velina Suruzhon
+//* @idnumber 6MI0600415
+//* @compiler VC
+//*
+//*
+
 #define NOMINMAX
 
 #include <iostream>
