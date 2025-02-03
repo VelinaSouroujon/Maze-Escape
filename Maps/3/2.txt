@@ -1,10 +1,11 @@
 20 25
+7
 C&  ## CC# C #  C # CC  E
 %C# C C  CC   C#  C## C# 
 C  C #C#C #%#C  #C C C  C
- #C # ## C C C# C## # C# 
+ #C # ## C C C# C###  C# 
 ##C  # C#C#  # C  C # # C
- C# C #      CC#C# C C  #
+ C# C #      CC#C# C C %#
 #  # #CC# C### C C##C#  C
  C#C#C   #  # ##  C#   # 
 # C  C##CC#C CC  # ## C# 
@@ -14,8 +15,8 @@ C# #C#  C      #C #C #C #
 C  C ## #C # # C # C #C# 
 # # #    # C# # C  ### C 
 C#C#  C#  C# C  # C    ##
-  C C###C #   ##  ##C#CC 
+  C C###C##   ##  ##C#CC 
 CC#CC C  C #% C C#C  C###
-#  # #  ##   #CC#  C#  # 
+#  # #  ##   #CC#  C#% # 
  C# C#CC  C#  # C #  #   
 @  C#  #C# C#C  # C#C C#X

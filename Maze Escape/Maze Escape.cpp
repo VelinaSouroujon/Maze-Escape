@@ -67,9 +67,11 @@ struct Map
 {
     int rowsCount;
     int colsCount;
+    int portalsCount;
     char** matrix;
     MapCoordinate playerPosition;
     MapCoordinate enemyPosition;
+    MapCoordinate* portals;
 };
 
 struct Game
@@ -281,6 +283,12 @@ void deleteMatrix(char**& matrix, size_t rows)
     matrix = nullptr;
 }
 
+void deleteMap(Map& map)
+{
+    deleteMatrix(map.matrix, map.rowsCount);
+    delete[] map.portals;
+}
+
 bool readMatrix(std::ifstream& inMap, Game& game)
 {
     if (!inMap.is_open())
@@ -289,10 +297,11 @@ bool readMatrix(std::ifstream& inMap, Game& game)
     }
 
     Map& map = game.map;
+    int portalIdx = 0;
 
-    for (size_t i = 0; i < map.rowsCount; i++)
+    for (size_t row = 0; row < map.rowsCount; row++)
     {
-        for (size_t j = 0; j < map.colsCount; j++)
+        for (size_t col = 0; col < map.colsCount; col++)
         {
             char ch;
             do
@@ -307,22 +316,27 @@ bool readMatrix(std::ifstream& inMap, Game& game)
 
             if (ch == PLAYER)
             {
-                map.playerPosition = { i, j };
-                map.matrix[i][j] = SPACE;
+                map.playerPosition = { row, col };
+                map.matrix[row][col] = SPACE;
+                continue;
             }
-            else if (ch == ENEMY)
+            if (ch == ENEMY)
             {
-                map.enemyPosition = { i, j };
-                map.matrix[i][j] = SPACE;
+                map.enemyPosition = { row, col };
+                map.matrix[row][col] = SPACE;
+                continue;
             }
-            else
-            {
-                map.matrix[i][j] = ch;
-            }
+
+            map.matrix[row][col] = ch;
 
             if (ch == COIN)
             {
                 game.totalCoins++;
+            }
+            else if (ch == PORTAL)
+            {
+                map.portals[portalIdx] = { row, col };
+                portalIdx++;
             }
         }
     }
@@ -340,12 +354,15 @@ bool readGame(Game& game, std::ifstream& inMap)
     Map& map = game.map;
     inMap >> map.rowsCount;
     inMap >> map.colsCount;
+    inMap >> map.portalsCount;
     inMap.ignore();
 
     map.matrix = initMatrix(map.rowsCount, map.colsCount);
+    map.portals = new MapCoordinate[map.portalsCount];
+
     if (!readMatrix(inMap, game))
     {
-        deleteMatrix(map.matrix, map.rowsCount);
+        deleteMap(map);
         return false;
     }
 
@@ -571,47 +588,19 @@ MapCoordinate findNextPortal(const Map& map, const MapCoordinate& currPortal)
         return nextPortal;
     }
 
-    int startRow, startCol;
-
-    if (currPortal.rowIdx == map.rowsCount - 1
-        && currPortal.colIdx == map.colsCount - 1)
+    for (size_t i = 0; i < map.portalsCount; i++)
     {
-        startRow = 0;
-        startCol = 0;
-    }
-    else
-    {
-        startRow = currPortal.rowIdx;
-        startCol = currPortal.colIdx + 1;
-    }
-
-    bool portalFound = false;
-    for (int i = startRow; i < map.rowsCount; i++)
-    {
-        if (i != startRow)
+        if (isSamePosition(currPortal, map.portals[i]))
         {
-            startCol = 0;
-        }
-
-        for (int j = startCol; j < map.colsCount; j++)
-        {
-            if (map.matrix[i][j] == PORTAL)
+            if (i == map.portalsCount - 1)
             {
-                portalFound = true;
-                nextPortal.rowIdx = i;
-                nextPortal.colIdx = j;
-                break;
+                nextPortal = map.portals[0];
+            }
+            else
+            {
+                nextPortal = map.portals[i + 1];
             }
 
-            if (i == map.rowsCount - 1 && j == map.colsCount - 1)
-            {
-                i = 0;
-                j = -1;
-            }
-        }
-
-        if (portalFound)
-        {
             break;
         }
     }
@@ -847,6 +836,7 @@ bool appendMapInfo(std::ofstream& outFile, const Map& map)
 
     outFile << map.rowsCount << std::endl;
     outFile << map.colsCount << std::endl;
+    outFile << map.portalsCount << std::endl;
 
     for (size_t i = 0; i < map.rowsCount; i++)
     {
@@ -1382,7 +1372,7 @@ Game setUpGame(Player& player)
             return savedGame;
         }
 
-        deleteMatrix(savedGame.map.matrix, savedGame.map.rowsCount);
+        deleteMap(savedGame.map);
     }
 
     Game game = {};
@@ -1500,7 +1490,7 @@ void playGame(Game& game, Player& player)
         }
     }
 
-    deleteMatrix(game.map.matrix, game.map.rowsCount);
+    deleteMap(game.map);
     player.savedGamesPerLevel[game.level - 1].map.matrix = nullptr;
 }
 
@@ -1515,7 +1505,7 @@ void deleteSavedGames(Player& player)
             continue;
         }
 
-        deleteMatrix(savedGame.map.matrix, savedGame.map.rowsCount);
+        deleteMap(savedGame.map);
     }
 }
 
