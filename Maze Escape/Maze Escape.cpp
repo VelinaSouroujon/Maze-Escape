@@ -92,6 +92,51 @@ struct Player
     Game savedGamesPerLevel[MAX_LEVEL] = {};
 };
 
+char toLower(char ch)
+{
+    if (ch >= 'A' && ch <= 'Z')
+    {
+        return ch + ('a' - 'A');
+    }
+
+    return ch;
+}
+
+int strCompare(const char* str1, const char* str2)
+{
+    if (str1 == nullptr || str2 == nullptr)
+    {
+        return -2;
+    }
+
+    while (true)
+    {
+        unsigned char ch1 = (unsigned char)*str1;
+        unsigned char ch2 = (unsigned char)*str2;
+
+        if (ch1 < ch2)
+        {
+            return -1;
+        }
+        if (ch1 > ch2)
+        {
+            return 1;
+        }
+        if (ch1 == '\0')
+        {
+            return 0;
+        }
+
+        str1++;
+        str2++;
+    }
+}
+
+bool isValidIdx(int idx, size_t arrLen)
+{
+    return idx >= 0 && idx < arrLen;
+}
+
 void clearConsole()
 {
     std::cout << "\033[;H"; // Moves cursor to the top left
@@ -105,153 +150,212 @@ void setConsoleColor(int colorNumber)
     SetConsoleTextAttribute(hConsole, colorNumber);
 }
 
+void printCharWithColorAndReset(char ch, int color)
+{
+    setConsoleColor(color);
+    std::cout << ch;
+    setConsoleColor(WHITE_COLOR);
+}
+
 bool isInRange(int value, int from, int to)
 {
     return value >= from
         && value <= to;
 }
 
-bool isSamePosition(const MapCoordinate& firstPosition, const MapCoordinate& secondPosition)
+int getStrLen(const char* str)
 {
-    return firstPosition.rowIdx == secondPosition.rowIdx
-        && firstPosition.colIdx == secondPosition.colIdx;
-}
-
-void printPlayerInfo(const Player& player)
-{
-    std::cout << player.name << ": ";
-
-    std::cout << player.level << " level; ";
-    std::cout << player.coins << " coins; ";
-    std::cout << player.lives << " lives";
-
-    std::cout << std::endl;
-}
-
-void swapPlayers(std::vector<Player>& players, size_t firstIdx, size_t secondIdx)
-{
-    if (firstIdx >= players.size() || secondIdx >= players.size())
-    {
-        return;
-    }
-
-    Player temp = players[firstIdx];
-    players[firstIdx] = players[secondIdx];
-    players[secondIdx] = temp;
-}
-
-int compareDesc(int first, int second)
-{
-    if (first > second)
+    if (str == nullptr)
     {
         return -1;
     }
 
-    if (first < second)
+    int length = 0;
+
+    while (*str != '\0')
     {
-        return 1;
+        length++;
+        str++;
     }
 
-    return 0;
+    return length;
 }
 
-int comparePlayers(const Player& firstPlayer, const Player& secondPlayer)
+void strCopy(const char* source, char* dest, size_t destStartIdx)
 {
-    int result = compareDesc(firstPlayer.level, secondPlayer.level);
-    if (result != 0)
+    if (source == nullptr || dest == nullptr)
     {
-        return result;
+        return;
     }
 
-    result = compareDesc(firstPlayer.coins, secondPlayer.coins);
-    if (result != 0)
+    size_t idx = 0;
+    while (source[idx] != '\0')
     {
-        return result;
+        dest[idx + destStartIdx] = source[idx];
+        idx++;
     }
 
-    result = compareDesc(firstPlayer.lives, secondPlayer.lives);
+    dest[idx + destStartIdx] = '\0';
+}
+
+int getTotalLength(const char* const* strings, size_t len, int* lengthMap)
+{
+    if (strings == nullptr || lengthMap == nullptr)
+    {
+        return -1;
+    }
+
+    int totalLen = 0;
+
+    for (size_t i = 0; i < len; i++)
+    {
+        int currLen = getStrLen(strings[i]);
+        if (currLen == -1)
+        {
+            lengthMap[i] = 0;
+            continue;
+        }
+
+        lengthMap[i] = currLen;
+        totalLen += currLen;
+    }
+
+    return totalLen;
+}
+
+char* getFilePath(const char* const* folders, size_t len, const char* extension = "txt")
+{
+    if (folders == nullptr || extension == nullptr || len == 0)
+    {
+        return nullptr;
+    }
+
+    const char DELIMITER = '/';
+    const char EXTENSION_DELIMITER = '.';
+    int delimetersCount = len;
+
+    int* lenMap = new int[len];
+    int extensionLen = getStrLen(extension);
+
+    int totalLen = getTotalLength(folders, len, lenMap) + extensionLen + delimetersCount;
+
+    char* result = new char[totalLen + 1];
+    result[totalLen] = '\0';
+
+    size_t resultIdx = 0;
+    bool isFirst = true;
+
+    for (size_t i = 0; i < len; i++)
+    {
+        if (folders[i] == nullptr)
+        {
+            continue;
+        }
+
+        if (isFirst)
+        {
+            isFirst = false;
+        }
+        else
+        {
+            result[resultIdx] = DELIMITER;
+            resultIdx++;
+        }
+
+        strCopy(folders[i], result, resultIdx);
+        resultIdx += lenMap[i];
+    }
+
+    delete[] lenMap;
+
+    if (extensionLen > 0)
+    {
+        result[resultIdx] = EXTENSION_DELIMITER;
+        resultIdx++;
+    }
+
+    strCopy(extension, result, resultIdx);
+
     return result;
 }
 
-bool isValidIdx(int idx, size_t arrLen)
+bool fileExists(const char* name)
 {
-    return idx >= 0 && idx < arrLen;
+    if (name == nullptr)
+    {
+        return false;
+    }
+
+    std::ifstream file(name);
+
+    if (file.is_open())
+    {
+        file.close();
+        return true;
+    }
+
+    return false;
 }
 
-void sortPlayers(std::vector<Player>& players, int startIdx, int endIdx)
+void strToLower(const char* inputStr, char* result)
 {
-    size_t playersSize = players.size();
-    if ((!isValidIdx(startIdx, playersSize)) || (!isValidIdx(endIdx, playersSize)))
+    if (inputStr == nullptr || result == nullptr)
     {
         return;
     }
 
-    if (startIdx >= endIdx)
+    int idx = 0;
+
+    while (inputStr[idx] != '\0')
     {
-        return;
+        result[idx] = toLower(inputStr[idx]);
+        idx++;
     }
 
-    int pivot = startIdx;
-    int left = pivot + 1;
-    int right = endIdx;
-
-    while (left <= right)
-    {
-        if (comparePlayers(players[left], players[pivot]) > 0
-            && comparePlayers(players[right], players[pivot]) < 0)
-        {
-            swapPlayers(players, left, right);
-        }
-
-        if (comparePlayers(players[left], players[pivot]) <= 0)
-        {
-            left++;
-        }
-
-        if (comparePlayers(players[right], players[pivot]) >= 0)
-        {
-            right--;
-        }
-    }
-
-    swapPlayers(players, pivot, right);
-
-    int firstSubvectorStart = startIdx;
-    int firstSubvectorEnd = right - 1;
-
-    int secondSubvectorStart = right + 1;
-    int secondSubvectorEnd = endIdx;
-
-    int firstSubvectorSize = firstSubvectorEnd - firstSubvectorStart + 1;
-    int secondSubvectorSize = secondSubvectorEnd - secondSubvectorStart + 1;
-
-    if (firstSubvectorSize <= secondSubvectorSize)
-    {
-        sortPlayers(players, firstSubvectorStart, firstSubvectorEnd);
-        sortPlayers(players, secondSubvectorStart, secondSubvectorEnd);
-    }
-    else
-    {
-        sortPlayers(players, secondSubvectorStart, secondSubvectorEnd);
-        sortPlayers(players, firstSubvectorStart, firstSubvectorEnd);
-    }
+    result[idx] = '\0';
 }
 
-char** initDefaultMatrix(size_t rowCount, size_t colCount, char defaultSymbol)
+char* getPlayerFilePath(const char* name)
 {
-    char** matrix = new char* [rowCount];
-
-    for (size_t i = 0; i < rowCount; i++)
+    if (name == nullptr)
     {
-        matrix[i] = new char[colCount];
-
-        for (size_t j = 0; j < colCount; j++)
-        {
-            matrix[i][j] = defaultSymbol;
-        }
+        return nullptr;
     }
 
-    return matrix;
+    char nameToLower[NAME_MAX_LENGTH];
+    strToLower(name, nameToLower);
+
+    const int foldersCount = 2;
+    const char playerDirPath[] = "../Players";
+    const char* folders[foldersCount] = { playerDirPath, nameToLower };
+    char* filePath = getFilePath(folders, foldersCount);
+
+    return filePath;
+}
+
+char* getPlayerNamesFilePath()
+{
+    const char plNamesDirPath[] = "../Names";
+    const int foldersCount = 1;
+    const char* pNamesDir[foldersCount] = { plNamesDirPath };
+    char* filePath = getFilePath(pNamesDir, foldersCount);
+
+    return filePath;
+}
+
+bool readPlayerInfo(std::ifstream& inFile, Player& player)
+{
+    if (!inFile.is_open())
+    {
+        return false;
+    }
+
+    inFile.getline(player.name, NAME_MAX_LENGTH);
+    inFile >> player.level;
+    inFile >> player.lives;
+    inFile >> player.coins;
+
+    return true;
 }
 
 char** initMatrix(size_t rows, size_t cols)
@@ -369,11 +473,271 @@ bool readGame(Game& game, std::ifstream& inMap)
     return true;
 }
 
-void printCharWithColorAndReset(char ch, int color)
+bool readSavedGames(std::ifstream& inFile, Player& player)
 {
-    setConsoleColor(color);
-    std::cout << ch;
-    setConsoleColor(WHITE_COLOR);
+    if (!inFile.is_open())
+    {
+        return false;
+    }
+
+    while (inFile.peek() != EOF)
+    {
+        Game game = {};
+        inFile >> game.keyFound;
+        inFile >> game.coinsCollected;
+        inFile >> game.level;
+        game.totalCoins += game.coinsCollected;
+
+        readGame(game, inFile);
+        player.savedGamesPerLevel[game.level - 1] = game;
+        inFile.ignore();
+    }
+
+    return true;
+}
+
+bool getPlayerByName(const char* name, Player& player)
+{
+    if (name == nullptr)
+    {
+        return false;
+    }
+
+    char* filePath = getPlayerFilePath(name);
+    std::ifstream inFile(filePath);
+    delete[] filePath;
+
+    if (!inFile.is_open())
+    {
+        return false;
+    }
+
+    readPlayerInfo(inFile, player);
+    inFile.ignore();
+    readSavedGames(inFile, player);
+
+    inFile.close();
+
+    return true;
+}
+
+int getDigitsCount(int num)
+{
+    if (num == 0)
+    {
+        return 1;
+    }
+
+    int digitsCount = 0;
+
+    while (num != 0)
+    {
+        num /= 10;
+        digitsCount++;
+    }
+
+    return digitsCount;
+}
+
+char* intToString(size_t num)
+{
+    int digitsCount = getDigitsCount(num);
+    char* strNum = new char[digitsCount + 1];
+    strNum[digitsCount] = '\0';
+    int idx = digitsCount - 1;
+
+    while (idx >= 0)
+    {
+        strNum[idx] = (num % 10) + '0';
+        num /= 10;
+        idx--;
+    }
+
+    return strNum;
+}
+
+void swap(int& first, int& second)
+{
+    int temp = first;
+    first = second;
+    second = temp;
+}
+
+void initRandom()
+{
+    srand(time(0));
+}
+
+int getRandomNumber(int min, int max)
+{
+    if (min > max)
+    {
+        swap(min, max);
+    }
+
+    int random = min + rand() % (max - min + 1);
+    return random;
+}
+
+char* getMapFilePath(size_t level, size_t mapsCount)
+{
+    if (level > MAX_LEVEL)
+    {
+        return nullptr;
+    }
+
+    const char mapsDirPath[] = "../Maps";
+    char* strLevel = intToString(level);
+
+    int mapNumber = getRandomNumber(1, mapsCount);
+    char* strMapNumber = intToString(mapNumber);
+
+    const int foldersCount = 3;
+    const char* mapsPathLevel[foldersCount] = { mapsDirPath, strLevel, strMapNumber };
+    char* filePath = getFilePath(mapsPathLevel, foldersCount);
+
+    delete[] strLevel;
+    delete[] strMapNumber;
+
+    return filePath;
+}
+
+bool isSamePosition(const MapCoordinate& firstPosition, const MapCoordinate& secondPosition)
+{
+    return firstPosition.rowIdx == secondPosition.rowIdx
+        && firstPosition.colIdx == secondPosition.colIdx;
+}
+
+void printPlayerInfo(const Player& player)
+{
+    std::cout << player.name << ": ";
+
+    std::cout << player.level << " level; ";
+    std::cout << player.coins << " coins; ";
+    std::cout << player.lives << " lives";
+
+    std::cout << std::endl;
+}
+
+void swapPlayers(std::vector<Player>& players, size_t firstIdx, size_t secondIdx)
+{
+    if (firstIdx >= players.size() || secondIdx >= players.size())
+    {
+        return;
+    }
+
+    Player temp = players[firstIdx];
+    players[firstIdx] = players[secondIdx];
+    players[secondIdx] = temp;
+}
+
+int compareDesc(int first, int second)
+{
+    if (first > second)
+    {
+        return -1;
+    }
+
+    if (first < second)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+int comparePlayers(const Player& firstPlayer, const Player& secondPlayer)
+{
+    int result = compareDesc(firstPlayer.level, secondPlayer.level);
+    if (result != 0)
+    {
+        return result;
+    }
+
+    result = compareDesc(firstPlayer.coins, secondPlayer.coins);
+    if (result != 0)
+    {
+        return result;
+    }
+
+    result = compareDesc(firstPlayer.lives, secondPlayer.lives);
+    return result;
+}
+
+void sortPlayers(std::vector<Player>& players, int startIdx, int endIdx)
+{
+    size_t playersSize = players.size();
+    if ((!isValidIdx(startIdx, playersSize)) || (!isValidIdx(endIdx, playersSize)))
+    {
+        return;
+    }
+
+    if (startIdx >= endIdx)
+    {
+        return;
+    }
+
+    int pivot = startIdx;
+    int left = pivot + 1;
+    int right = endIdx;
+
+    while (left <= right)
+    {
+        if (comparePlayers(players[left], players[pivot]) > 0
+            && comparePlayers(players[right], players[pivot]) < 0)
+        {
+            swapPlayers(players, left, right);
+        }
+
+        if (comparePlayers(players[left], players[pivot]) <= 0)
+        {
+            left++;
+        }
+
+        if (comparePlayers(players[right], players[pivot]) >= 0)
+        {
+            right--;
+        }
+    }
+
+    swapPlayers(players, pivot, right);
+
+    int firstSubvectorStart = startIdx;
+    int firstSubvectorEnd = right - 1;
+
+    int secondSubvectorStart = right + 1;
+    int secondSubvectorEnd = endIdx;
+
+    int firstSubvectorSize = firstSubvectorEnd - firstSubvectorStart + 1;
+    int secondSubvectorSize = secondSubvectorEnd - secondSubvectorStart + 1;
+
+    if (firstSubvectorSize <= secondSubvectorSize)
+    {
+        sortPlayers(players, firstSubvectorStart, firstSubvectorEnd);
+        sortPlayers(players, secondSubvectorStart, secondSubvectorEnd);
+    }
+    else
+    {
+        sortPlayers(players, secondSubvectorStart, secondSubvectorEnd);
+        sortPlayers(players, firstSubvectorStart, firstSubvectorEnd);
+    }
+}
+
+char** initDefaultMatrix(size_t rowCount, size_t colCount, char defaultSymbol)
+{
+    char** matrix = new char* [rowCount];
+
+    for (size_t i = 0; i < rowCount; i++)
+    {
+        matrix[i] = new char[colCount];
+
+        for (size_t j = 0; j < colCount; j++)
+        {
+            matrix[i][j] = defaultSymbol;
+        }
+    }
+
+    return matrix;
 }
 
 void printMatrix(const Map& map, int playerColor, int enemyColor)
@@ -496,46 +860,6 @@ bool inputYesNo(const char* question)
 
     int optionNumber = getNumberInRange(YES, NO);
     return optionNumber == YES;
-}
-
-char toLower(char ch)
-{
-    if (ch >= 'A' && ch <= 'Z')
-    {
-        return ch + ('a' - 'A');
-    }
-
-    return ch;
-}
-
-int strCompare(const char* str1, const char* str2)
-{
-    if (str1 == nullptr || str2 == nullptr)
-    {
-        return -2;
-    }
-
-    while (true)
-    {
-        unsigned char ch1 = (unsigned char)*str1;
-        unsigned char ch2 = (unsigned char)*str2;
-
-        if (ch1 < ch2)
-        {
-            return -1;
-        }
-        if (ch1 > ch2)
-        {
-            return 1;
-        }
-        if (ch1 == '\0')
-        {
-            return 0;
-        }
-
-        str1++;
-        str2++;
-    }
 }
 
 bool isValidCoordinate(const MapCoordinate& coordinate, int rows, int cols)
@@ -884,186 +1208,6 @@ bool appendGameInfo(std::ofstream& outFile, const Game& game)
     return true;
 }
 
-int getStrLen(const char* str)
-{
-    if (str == nullptr)
-    {
-        return -1;
-    }
-
-    int length = 0;
-
-    while (*str != '\0')
-    {
-        length++;
-        str++;
-    }
-
-    return length;
-}
-
-void strCopy(const char* source, char* dest, size_t destStartIdx)
-{
-    if (source == nullptr || dest == nullptr)
-    {
-        return;
-    }
-
-    size_t idx = 0;
-    while (source[idx] != '\0')
-    {
-        dest[idx + destStartIdx] = source[idx];
-        idx++;
-    }
-
-    dest[idx + destStartIdx] = '\0';
-}
-
-int getTotalLength(const char* const* strings, size_t len, int* lengthMap)
-{
-    if (strings == nullptr || lengthMap == nullptr)
-    {
-        return -1;
-    }
-
-    int totalLen = 0;
-
-    for (size_t i = 0; i < len; i++)
-    {
-        int currLen = getStrLen(strings[i]);
-        if (currLen == -1)
-        {
-            lengthMap[i] = 0;
-            continue;
-        }
-
-        lengthMap[i] = currLen;
-        totalLen += currLen;
-    }
-
-    return totalLen;
-}
-
-char* getFilePath(const char* const* folders, size_t len, const char* extension = "txt")
-{
-    if (folders == nullptr || extension == nullptr || len == 0)
-    {
-        return nullptr;
-    }
-
-    const char DELIMITER = '/';
-    const char EXTENSION_DELIMITER = '.';
-    int delimetersCount = len;
-
-    int* lenMap = new int[len];
-    int extensionLen = getStrLen(extension);
-
-    int totalLen = getTotalLength(folders, len, lenMap) + extensionLen + delimetersCount;
-
-    char* result = new char[totalLen + 1];
-    result[totalLen] = '\0';
-
-    size_t resultIdx = 0;
-    bool isFirst = true;
-
-    for (size_t i = 0; i < len; i++)
-    {
-        if (folders[i] == nullptr)
-        {
-            continue;
-        }
-
-        if (isFirst)
-        {
-            isFirst = false;
-        }
-        else
-        {
-            result[resultIdx] = DELIMITER;
-            resultIdx++;
-        }
-
-        strCopy(folders[i], result, resultIdx);
-        resultIdx += lenMap[i];
-    }
-
-    delete[] lenMap;
-
-    if (extensionLen > 0)
-    {
-        result[resultIdx] = EXTENSION_DELIMITER;
-        resultIdx++;
-    }
-
-    strCopy(extension, result, resultIdx);
-
-    return result;
-}
-
-bool fileExists(const char* name)
-{
-    if (name == nullptr)
-    {
-        return false;
-    }
-
-    std::ifstream file(name);
-
-    if (file.is_open())
-    {
-        file.close();
-        return true;
-    }
-
-    return false;
-}
-
-void strToLower(const char* inputStr, char* result)
-{
-    if (inputStr == nullptr || result == nullptr)
-    {
-        return;
-    }
-
-    int idx = 0;
-
-    while (inputStr[idx] != '\0')
-    {
-        result[idx] = toLower(inputStr[idx]);
-        idx++;
-    }
-
-    result[idx] = '\0';
-}
-
-char* getPlayerFilePath(const char* name)
-{
-    if (name == nullptr)
-    {
-        return nullptr;
-    }
-
-    char nameToLower[NAME_MAX_LENGTH];
-    strToLower(name, nameToLower);
-
-    const int foldersCount = 2;
-    const char playerDirPath[] = "../Players";
-    const char* folders[foldersCount] = { playerDirPath, nameToLower };
-    char* filePath = getFilePath(folders, foldersCount);
-
-    return filePath;
-}
-
-char* getPlayerNamesFilePath()
-{
-    const char plNamesDirPath[] = "../Names";
-    const int foldersCount = 1;
-    const char* pNamesDir[foldersCount] = { plNamesDirPath };
-    char* filePath = getFilePath(pNamesDir, foldersCount);
-
-    return filePath;
-}
-
 bool appendPlayerNameToFile(const char* name)
 {
     if (name == nullptr)
@@ -1155,150 +1299,6 @@ bool savePlayerProgress(const Player& player)
     outFile.close();
 
     return true;
-}
-
-bool readPlayerInfo(std::ifstream& inFile, Player& player)
-{
-    if (!inFile.is_open())
-    {
-        return false;
-    }
-
-    inFile.getline(player.name, NAME_MAX_LENGTH);
-    inFile >> player.level;
-    inFile >> player.lives;
-    inFile >> player.coins;
-
-    return true;
-}
-
-bool readSavedGames(std::ifstream& inFile, Player& player)
-{
-    if (!inFile.is_open())
-    {
-        return false;
-    }
-
-    while (inFile.peek() != EOF)
-    {
-        Game game = {};
-        inFile >> game.keyFound;
-        inFile >> game.coinsCollected;
-        inFile >> game.level;
-        game.totalCoins += game.coinsCollected;
-
-        readGame(game, inFile);
-        player.savedGamesPerLevel[game.level - 1] = game;
-        inFile.ignore();
-    }
-
-    return true;
-}
-
-bool getPlayerByName(const char* name, Player& player)
-{
-    if (name == nullptr)
-    {
-        return false;
-    }
-
-    char* filePath = getPlayerFilePath(name);
-    std::ifstream inFile(filePath);
-    delete[] filePath;
-
-    if (!inFile.is_open())
-    {
-        return false;
-    }
-
-    readPlayerInfo(inFile, player);
-    inFile.ignore();
-    readSavedGames(inFile, player);
-   
-    inFile.close();
-
-    return true;
-}
-
-int getDigitsCount(int num)
-{
-    if (num == 0)
-    {
-        return 1;
-    }
-
-    int digitsCount = 0;
-
-    while (num != 0)
-    {
-        num /= 10;
-        digitsCount++;
-    }
-
-    return digitsCount;
-}
-
-char* intToString(size_t num)
-{
-    int digitsCount = getDigitsCount(num);
-    char* strNum = new char[digitsCount + 1];
-    strNum[digitsCount] = '\0';
-    int idx = digitsCount - 1;
-
-    while(idx >= 0)
-    {
-        strNum[idx] = (num % 10) + '0';
-        num /= 10;
-        idx--;
-    } 
-
-    return strNum;
-}
-
-void swap(int& first, int& second)
-{
-    int temp = first;
-    first = second;
-    second = temp;
-}
-
-void initRandom()
-{
-    srand(time(0));
-}
-
-int getRandomNumber(int min, int max)
-{
-    if (min > max)
-    {
-        swap(min, max);
-    }
-
-    int random = min + rand() % (max - min + 1);
-    return random;
-}
-
-char* getMapFilePath(size_t level, size_t mapsCount)
-{
-    if (level > MAX_LEVEL)
-    {
-        return nullptr;
-    }
-
-    const char mapsDirPath[] = "../Maps";
-    char* strLevel = intToString(level);
-
-    int mapNumber = getRandomNumber(1, mapsCount);
-    char* strMapNumber = intToString(mapNumber);
-
-    const int foldersCount = 3;
-    const char* mapsPathLevel[foldersCount] = { mapsDirPath, strLevel, strMapNumber };
-    char* filePath = getFilePath(mapsPathLevel, foldersCount);
-
-    delete[] strLevel;
-    delete[] strMapNumber;
-
-    return filePath;
 }
 
 int getGameLevel(const Player& player)
