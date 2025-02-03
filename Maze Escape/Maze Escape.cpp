@@ -30,7 +30,7 @@ const int MAX_LEVEL = 3;
 const int DEFAULT_LIVES = 3;
 const int NAME_MIN_LENGTH = 2;
 const int NAME_MAX_LENGTH = 51;
-const int LIFE_PRICE = 50;
+const int LIFE_PRICE = 30;
 
 const int GREEN_COLOR = 2;
 const int RED_COLOR = 4;
