@@ -1358,6 +1358,16 @@ std::vector<Player> getAllPlayers(const Player& player)
     return allPlayers;
 }
 
+int enemyMovesPerPlayerMove(const Game& game)
+{
+    if (game.level == MAX_LEVEL)
+    {
+        return 2;
+    }
+
+    return 1;
+}
+
 Game setUpGame(Player& player)
 {
     int level = getGameLevel(player);
@@ -1444,6 +1454,8 @@ void playGame(Game& game, Player& player)
     std::vector<VisitedCell> visitedCells;
     visitedCells.reserve(capacity);
 
+    int enemyMoves = enemyMovesPerPlayerMove(game);
+
     while (true)
     {
         printGameInfo(game, player);
@@ -1479,7 +1491,7 @@ void playGame(Game& game, Player& player)
             continue;
         }
 
-        game.map.enemyPosition = findShortestPath(game.map, visitedCells, 1);
+        game.map.enemyPosition = findShortestPath(game.map, visitedCells, enemyMoves);
 
         if (isSamePosition(game.map.playerPosition, game.map.enemyPosition))
         {
