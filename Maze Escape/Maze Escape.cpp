@@ -1133,7 +1133,7 @@ void winUpdate(const Game& game, Player& player)
 
 void lossUpdate(Player& player)
 {
-    player.lives = DEFAULT_LIVES;
+    player.lives = 1;
 }
 
 bool savePlayerInfo(std::ofstream& outFile, const Player& player)
